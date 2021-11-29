@@ -1,0 +1,75 @@
+---
+title: "O GRANDE TÍTULO"
+author: "Aqui você coloca o autor(s)"
+abstract: "Aqui você escreve o resumo"
+header-includes:
+   - \usepackage[brazil]{babel}
+   - \usepackage{bm}
+geometry: margin=2cm
+output:
+  bookdown::pdf_document2:
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+```{r setup,include=F}
+
+options(digits=3)  #Arrendodamento
+options(scipen=999)
+ggplot2::theme_set(ggplot2::theme_minimal()) #Tema dos gráficos produzidos no ggplot2
+knitr::opts_chunk$set(echo=F,message=F,warning=F,fig.pos = 'H',fig.align = 'center',fig.width=7.8, fig.height=4.85)
+scale_fill_discrete = \(...) ggplot2::scale_fill_brewer(... , palette="Set2") #Fixa a scale do fill dos gráficos do ggplot2
+library(tidyverse)
+```
+
+
+# Introdução
+Naruto é uma animação japonesa (anime)  que adapta a  série de mangá escrita e ilustrada por Masashi Kishimoto, que conta a história de Naruto Uzumaki, um jovem ninja que constantemente procura por reconhecimento e sonha em se tornar Hokage, o ninja líder de sua vila. A história é dividida em duas partes, a primeira parte se passa nos anos da pré-adolescência de Naruto (clássico), e a segunda parte se passa em sua adolescência (Shippuden). Nesse trabalho trataremos sobre o Naruto Shippuden, desenvolvendo-o em uma perpestiva de séries temporais, a variável a ser estudada será a avaliação dos episódios, assim veremos  pontos importantes da saga ao longo do tempo.  
+O Banco de dados utilizado é totalmente original, foi criado fazendo *Web scraping* de dois sites, sendo eles o [ratingraph](https://www.ratingraph.com/tv-shows/naruto-shippden-ratings-27282/) e o [animefillerlist](https://www.animefillerlist.com/shows/naruto-shippuden)
+
+
+# Informações
+```{r }
+df=read_csv("naruto.csv")
+  
+```
+Como o anime é uma adaptação, existem  episódios originais do próprio anime, em outras palavras não seguem o material original, esses episódios são chamados de Fillers, existem também episódios que seguem a trama do mangá mas também possuem elementos novos, esses chamados de Mixed Canon. 
+Vejamos a quantidade de e
+
+# Testes
+
+
+# Modelagem
+
+
+# Tabelas e resultados MYPDF1 ENTROU NO CHAT
+
+
+
+```{r }
+t=df %>% 
+  ggplot(aes(numero_episodio,rate))+
+  geom_line(size=0.8,color="#050A03")+
+  theme_void()+
+  labs("Série")
+t %>% 
+ggimage::ggbackground(background="https://mir-s3-cdn-cf.behance.net/project_modules/2800_opt_1/ea9ea098380153.5eda9f0a3d798.jpg")    
+```
+
+
+```{r }
+df %>% 
+  group_by(Saga) %>% 
+  summarise(mean=mean(rate)) %>% 
+  arrange(desc(mean))
+```
+
+```{r}
+
+
+
+```
+
+
