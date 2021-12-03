@@ -17,11 +17,10 @@ editor_options:
 ```{r setup,include=F}
 
 options(digits=3)  #Arrendodamento
-options(scipen=999)
 ggplot2::theme_set(ggplot2::theme_minimal()) #Tema dos gráficos produzidos no ggplot2
 knitr::opts_chunk$set(echo=F,message=F,warning=F,fig.pos = 'H',fig.align = 'center',fig.width=7.8, fig.height=3.85)
 library(tidyverse)
-df=read_csv("naruto.csv")
+
 ```
 
 ```{r functions}
@@ -85,6 +84,8 @@ Em termos de avaliação ao longo do tempo, podemos utilizar como indíce ordina
 df %>% 
   ggplot(aes(x=numero_episodio,y=rate)) +
   geom_line()+
+  gghighlight::gghighlight(200<numero_episodio & numero_episodio<400,
+                           unhighlighted_params = list(colour = '#CB6007'))+
   labs(x="Numero do episódio",y="Avaliação")
 ```
 Há bastante coisa a se notar nesse gráfico, primeiramente pelos episódios 200 e 400, existe um indicio de alteração na média das variáveis aleatórias, portanto furando o pressuposto de média constante ao longo do tempo, perto dos episódios finais da saga nota-se  também inúmeras quedas bruscas na avaliação sem um contra-peso de avaliações com notas altas, outro indicio de não estacionariedade.  
@@ -101,11 +102,44 @@ Assim fica fácil ver que os episódios com menor avaliação são em sua maior 
 
 
 # Testes
-É necessário avaliar se o que vimos na seção anterior vale de fato para o processo estocástico, assim vamos precisar aplicar testes de hipóteses para verificar algumas propriedades, como existência de tendência e  sazonalidade.
+Os gráficos de seção anterior evidenciaram a possibilidade da série não ser estacionária, assim faz-se necessário verificar se  vale de fato para o processo estocástico, com isso  vamos precisar aplicar testes de hipóteses para averiguar  algumas propriedades, como existência de tendência e  sazonalidade.
 
 ### Tendência 
 
+Tendência refere-se a um algum  comportamento   não - estocástico da série em algum momento do tempo, se tal comportamento só acontece em alguns momentos especifícos do tempo, chamamos de tendência estocástica, do contrário é dita determistica. Vamos começar pelos testes de tendência deterministica, que em termos sumarizados possuem como hipótese:
+$$
+H_0:\text{A série possui tendência determistica}
+$$
+```{r}
+kendal=trend::mk.test(df$rate)
+wald=trend::ww.test(df$rate)
+stuart=trend::cs.test(df$rate)
+
+
+```
+##E Testes de Raiz unitária
+
+```{r}
+kpss=tseries::kpss.test(df$rate, null=c("Level","Trend"), lshort=TRUE)
+adf=tseries::adf.test(df$rate)
+pp=tseries::pp.test(df$rate)
+
+
+```
+
+
+
 ### Sazonalidade
+Sazonalidade acontece quando a série possui um comportamento que se repete frequencialmente 
+
+```{r}
+krusk=seastests::kw(df$rate,freq = 7)
+friedman=seastests::fried(df$rate,freq=7)
+tqs=seastests::qs(df$rate,freq=7)
+
+```
+
+
 # Modelagem
 
 
