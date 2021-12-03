@@ -10,6 +10,12 @@ output:
   bookdown::pdf_document2:
 editor_options:
   chunk_output_type: console
+indent: true
+bibliography: bib.bib 
+csl: statistics.csl
+nocite: '@*'
+link-citations: true
+
 ---
 
 
@@ -45,7 +51,7 @@ scale_fill_alisson <- function(...) {
   ggplot2:::manual_scale(
     "fill",
     values = setNames(
-      c("#EA2129", "#F78D69", "#74BDCB"), levels(as.factor(df$Tipo)),
+      c("#EA2129", "#CF6520", "#1EAB78"), levels(as.factor(df$Tipo)),
       ...
     )
   )
@@ -54,8 +60,9 @@ scale_fill_discrete <- \(...) scale_fill_alisson(...)
 ```
 
 # Introdução
-Naruto é uma animação japonesa (anime)  que adapta a  série de mangá escrita e ilustrada por Masashi Kishimoto, que conta a história de Naruto Uzumaki, um jovem ninja que constantemente procura por reconhecimento e sonha em se tornar Hokage, o ninja líder de sua vila. A história é dividida em duas partes, a primeira parte se passa nos anos da pré-adolescência de Naruto (clássico), e a segunda parte se passa em sua adolescência (Shippuden). Nesse trabalho trataremos sobre o Naruto Shippuden, desenvolvendo-o em uma perpestiva de séries temporais, a variável a ser estudada será a avaliação dos episódios, assim veremos  pontos importantes da saga ao longo do tempo.  
-O Banco de dados utilizado é totalmente original, foi criado fazendo *Web scraping* de dois sites, sendo eles o [ratingraph](https://www.ratingraph.com/tv-shows/naruto-shippden-ratings-27282/) e o [animefillerlist](https://www.animefillerlist.com/shows/naruto-shippuden).
+Naruto é uma animação japonesa (anime)  que adapta a  série de mangá escrita e ilustrada por Masashi Kishimoto, que conta a história de Naruto Uzumaki, um jovem ninja que constantemente procura por reconhecimento e sonha em se tornar Hokage, o ninja líder de sua vila.  
+A história é dividida em duas partes, a primeira parte se passa nos anos da pré-adolescência de Naruto (clássico), e a segunda parte se passa em sua adolescência (Shippuden). Nesse trabalho trataremos sobre o Naruto Shippuden, desenvolvendo-o em uma perpestiva de séries temporais, a variável a ser estudada será a avaliação dos episódios, assim veremos  pontos importantes da saga ao longo do tempo.  
+O Banco de dados utilizado é totalmente original, foi criado fazendo *Web scraping* de dois sites diferentes, para aqueles interessados o banco foi dispobilizado [aqui](https://www.kaggle.com/alisson987/naruto-shippuden-rate).
 
 
 # Informações
@@ -63,7 +70,7 @@ O Banco de dados utilizado é totalmente original, foi criado fazendo *Web scrap
 df=read_csv("naruto.csv")
   
 ```
-Como o anime é uma adaptação, existem  episódios originais do próprio anime, em outras palavras não seguem o material original, esses episódios são chamados de Fillers, existem também episódios que seguem a trama do mangá mas também possuem elementos novos, esses chamados de Mixed Canon.  
+Como o anime é uma adaptação, existem  episódios fiéis ao mangá (Manga Canon) e episódios  originais do próprio anime, em outras palavras não seguem o material original, esses episódios são chamados de Fillers, existem também episódios que seguem a trama do mangá mas além disso possuem elementos novos, esses chamados de Mixed Canon.  
 Vejamos pelo gráfico a seguir a porcentagem do tipo dos episódios
 
 ```{r plttipo}
@@ -88,7 +95,7 @@ df %>%
                            unhighlighted_params = list(colour = '#CB6007'))+
   labs(x="Numero do episódio",y="Avaliação")
 ```
-Há bastante coisa a se notar nesse gráfico, primeiramente pelos episódios 200 e 400, existe um indicio de alteração na média das variáveis aleatórias, portanto furando o pressuposto de média constante ao longo do tempo, perto dos episódios finais da saga nota-se  também inúmeras quedas bruscas na avaliação sem um contra-peso de avaliações com notas altas, outro indicio de não estacionariedade.  
+Há bastante coisa a se notar nesse gráfico, primeiramente pelos episódios 200 e 400, existe um indício de alteração na média das variáveis aleatórias, portanto furando o pressuposto de média constante ao longo do tempo, perto dos episódios finais da saga nota-se  também inúmeras quedas bruscas na avaliação sem um contra-peso de avaliações com notas altas, outro indicio de não estacionariedade.  
 É importante tentarmos entender um pouco sobre esses episódios com notas baixas, assim vamos ver esse gráfico pelo tipo de episódio.
 
 ```{r}
@@ -96,9 +103,34 @@ df %>%
   ggplot(aes(x=numero_episodio,y=rate,color=Tipo,group=1)) +
   geom_line()+
   labs(x="Numero do episódio",y="Avaliação")+
-  ggplot2::scale_color_manual(breaks = c(levels(as.factor(df$Tipo))), values = c("#EA2129", "#F78D69", "#74BDCB"))
+  ggplot2::scale_color_manual(breaks = c(levels(as.factor(df$Tipo))), values = c("#EA2129", "#E08223", "#1CD0AD"))
 ```
 Assim fica fácil ver que os episódios com menor avaliação são em sua maior parte fillers, toda queda brusca de avaliação tem um episódio filler envolvido.
+
+É necessário também avaliar a correlação nas avaliações:
+```{r}
+##esse pacote aqui tem problemas, forecast::ggAcf(df$rate) não funciona, sou obrigado a dar library
+
+library(forecast)
+ggAcf(df$rate,lag.max = 35, type=c("correlation"))+
+  labs(title='Função de autocorrelação')
+  
+```
+Uma abordagem importante também é decompor a série temporal, apriori supõe-se a existência de três elementos, a saber: Tendência, sazonalidade e resíduo. Todos esses serão explorados cuidadosamente nas seções posteriores, assim vamos decompor a série para ter um vislumbre de tais elementos:
+
+```{r}
+decompose=forecast::mstl(df$rate) 
+decompose |> autoplot()
+
+
+```
+```{r}
+#normal K  
+data.frame(decompose)$Remainder |> 
+  shapiro.test()
+
+```
+
 
 
 # Testes
@@ -117,15 +149,6 @@ stuart=trend::cs.test(df$rate)
 
 
 ```
-##E Testes de Raiz unitária
-
-```{r}
-kpss=tseries::kpss.test(df$rate, null=c("Level","Trend"), lshort=TRUE)
-adf=tseries::adf.test(df$rate)
-pp=tseries::pp.test(df$rate)
-
-
-```
 
 
 
@@ -138,13 +161,29 @@ friedman=seastests::fried(df$rate,freq=7)
 tqs=seastests::qs(df$rate,freq=7)
 
 ```
+### Testes de Raiz unitária
+Para começar tal seção, primeiros vamos definir um passeio aleatório em sua forma simplificada:
+$$
+Y_t=Y_{t-1}+\epsilon_t
+$$
+Onde t refere-se aos indíces de ordenação, e $\epsilon$  um termo aleatório, para facilidade vamos assumir que $E(\epsilon_t)=\mu$ e $var(\epsilon_t)=\sigma^2$ $\forall t$, assim subtraindo-se $Y_{t-1}$ em ambos os lados tem-se $$Y_t-Y_{t-1}=\epsilon_t$$ que é um processo estacionário, o processo anterior é dito processo estacionário em diferença, em outros casos também chamado de processo integrado. O exemplo anterior trata-se de um caso mais geral $$Y_t=\phi Y_{t-1}+\epsilon_t$$ onde evidentemente $\phi=1$, é fácil mostrar que se $|\phi|<1$ tem-se um processo estocástico, aqui portanto, estamos interessados nesse caso, para isso utilizaremos  testes de hipótese. 
+
+Fala-se também que o caso anterior na forma simplificada possui raiz unitária, por causa do operador Lag, aqui não definido, porém  pode-se ler sobre em @morettin2018analise
+
+```{r}
+kpss=tseries::kpss.test(df$rate, null=c("Level","Trend"), lshort=TRUE)
+adf=tseries::adf.test(df$rate)
+pp=tseries::pp.test(df$rate)
+
+
+```
 
 
 # Modelagem
 
 
-# Tabelas e resultados MYPDF1 ENTROU NO CHAT
-# Referências
+
+
 
 
 ```{r }
@@ -168,7 +207,7 @@ df %>%
 ```{r}
 
 
-
 ```
+# Referências
 
 
