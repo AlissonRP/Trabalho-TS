@@ -1,7 +1,7 @@
 ---
 title: "O GRANDE TÍTULO"
-author: "Alisson Rosa"
-abstract: "Aqui você escreve o resumo"
+author: "Alisson Rosa e Vítor Pereira"
+abstract: "One Piece > Naruto"
 header-includes:
    - \usepackage[brazil]{babel}
    - \usepackage{bm}
@@ -10,95 +10,138 @@ output:
   bookdown::pdf_document2:
 editor_options:
   chunk_output_type: console
+indent: true
+bibliography: bib.bib 
+csl: statistics.csl
+nocite: '@*'
+link-citations: true
+
 ---
 
 
 
 ```{r setup,include=F}
 
-options(digits=3)  #Arrendodamento
-ggplot2::theme_set(ggplot2::theme_minimal()) #Tema dos gráficos produzidos no ggplot2
-knitr::opts_chunk$set(echo=F,message=F,warning=F,fig.pos = 'H',fig.align = 'center',fig.width=7.8, fig.height=3.85)
+options(digits = 3) # Arrendodamento
+ggplot2::theme_set(ggplot2::theme_minimal()) # Tema dos gráficos produzidos no ggplot2
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.85)
 library(tidyverse)
-
 ```
 
 ```{r functions}
-barplot=function(df,v){
-ggplot(df, aes(x = {{v}}, 
-                          y = prop.table(stat(count)), 
-                            fill = {{v}}, 
-                          label = scales::percent(prop.table(stat(count))))) +
-    geom_bar(position = "dodge",color="black") + 
-    geom_text(stat = 'count',
-              position = position_dodge(.9), 
-              vjust = -0.5, 
-              size = 3.5) + 
-    scale_y_continuous(labels = scales::percent) + 
-    labs(y="Proporção",x=df %>%
-         select({{v}}) %>% 
-         names(),caption = "Fonte: Elaborado pelos autores")+
-    theme(plot.title = element_text(hjust=0.5,size=10),legend.position="none")
+barplot <- function(df, v) {
+  ggplot(df, aes(
+    x = {{ v }},
+    y = prop.table(stat(count)),
+    fill = {{ v }},
+    label = scales::percent(prop.table(stat(count)))
+  )) +
+    geom_bar(position = "dodge", color = "black") +
+    geom_text(
+      stat = "count",
+      position = position_dodge(.9),
+      vjust = -0.5,
+      size = 3.5
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(y = "Proporção", x = df %>%
+      select({{ v }}) %>%
+      names(), caption = "Fonte: Elaborado pelos autores") +
+    theme(plot.title = element_text(hjust = 0.5, size = 10), legend.position = "none")
 }
 
 scale_fill_alisson <- function(...) {
   ggplot2:::manual_scale(
     "fill",
     values = setNames(
-      c("#EA2129", "#F78D69", "#74BDCB"), levels(as.factor(df$Tipo)),
+      c("#EA2129", "#CF6520", "#1EAB78"), levels(as.factor(df$Tipo)),
       ...
     )
   )
 }
+
+calcSSE <- function(data, regressor, time, x) {
+  loessMod <- try(loess(eval(parse(text = paste(regressor, "~", paste("as.numeric(", time, ")", sep = ""), sep = " "))), data = data, span = x), silent = T)
+  res <- try(loessMod$residuals, silent = T)
+  if (class(res) != "try-error") {
+    sse <- sum(res^2)
+  } else {
+    sse <- 99999
+  }
+  return(sse)
+}
+
 scale_fill_discrete <- \(...) scale_fill_alisson(...)
 ```
 
 # Introdução
-Naruto é uma animação japonesa (anime)  que adapta a  série de mangá escrita e ilustrada por Masashi Kishimoto, que conta a história de Naruto Uzumaki, um jovem ninja que constantemente procura por reconhecimento e sonha em se tornar Hokage, o ninja líder de sua vila. A história é dividida em duas partes, a primeira parte se passa nos anos da pré-adolescência de Naruto (clássico), e a segunda parte se passa em sua adolescência (Shippuden). Nesse trabalho trataremos sobre o Naruto Shippuden, desenvolvendo-o em uma perpestiva de séries temporais, a variável a ser estudada será a avaliação dos episódios, assim veremos  pontos importantes da saga ao longo do tempo.  
-O Banco de dados utilizado é totalmente original, foi criado fazendo *Web scraping* de dois sites, sendo eles o [ratingraph](https://www.ratingraph.com/tv-shows/naruto-shippden-ratings-27282/) e o [animefillerlist](https://www.animefillerlist.com/shows/naruto-shippuden).
+Naruto é uma animação japonesa (anime)  que adapta a  série de mangá escrita e ilustrada por Masashi Kishimoto, que conta a história de Naruto Uzumaki, um jovem ninja que constantemente procura por reconhecimento e sonha em se tornar Hokage, o ninja líder de sua vila.  
+A história é dividida em duas partes, a primeira parte se passa nos anos da pré-adolescência de Naruto (clássico), e a segunda parte se passa em sua adolescência (Shippuden). Nesse trabalho trataremos sobre o Naruto Shippuden, desenvolvendo-o em uma perpestiva de séries temporais, a variável a ser estudada será a avaliação dos episódios, assim veremos  pontos importantes da saga ao longo do tempo.  
+O Banco de dados utilizado é totalmente original, foi criado fazendo *Web scraping* de dois sites diferentes, para aqueles interessados o banco foi dispobilizado [aqui](https://www.kaggle.com/alisson987/naruto-shippuden-rate).
 
 
 # Informações
 ```{r }
-df=read_csv("naruto.csv")
-  
+df <- read_csv("naruto.csv")
 ```
-Como o anime é uma adaptação, existem  episódios originais do próprio anime, em outras palavras não seguem o material original, esses episódios são chamados de Fillers, existem também episódios que seguem a trama do mangá mas também possuem elementos novos, esses chamados de Mixed Canon.  
+Como o anime é uma adaptação, existem  episódios fiéis ao mangá (Manga Canon) e episódios  originais do próprio anime, em outras palavras não seguem o material original, esses episódios são chamados de Fillers, existem também episódios que seguem a trama do mangá mas além disso possuem elementos novos, esses chamados de Mixed Canon.  
 Vejamos pelo gráfico a seguir a porcentagem do tipo dos episódios
 
 ```{r plttipo}
-barplot(df,Tipo)
+barplot(df, Tipo)
 ```
 É um fato bastante curioso, Naruto Shippuden possui uma quantidade altíssima de episódios fillers, aproximadamente 41%, note pela tabela  que são somente 31 episódios a mais canônicos.
 ```{r}
-df %>% 
-  group_by(Tipo) %>% 
-  count() %>% 
-  rename(Quantidade=n) %>% 
+df %>%
+  group_by(Tipo) %>%
+  count() %>%
+  rename(Quantidade = n) %>%
   mypdf1::pdf1_tbl("Valores Absolutos do Tipo de Episódio")
 ```
 
 Em termos de avaliação ao longo do tempo, podemos utilizar como indíce ordinal o próprio número do episódio já que que é uma função injetora no tempo.
 
 ```{r}
-df %>% 
-  ggplot(aes(x=numero_episodio,y=rate)) +
-  geom_line()+
-  gghighlight::gghighlight(200<numero_episodio & numero_episodio<400,
-                           unhighlighted_params = list(colour = '#CB6007'))+
-  labs(x="Numero do episódio",y="Avaliação")
+df %>%
+  ggplot(aes(x = numero_episodio, y = rate)) +
+  geom_line() +
+  gghighlight::gghighlight(200 < numero_episodio & numero_episodio < 400,
+    unhighlighted_params = list(colour = "#CB6007")
+  ) +
+  labs(x = "Numero do episódio", y = "Avaliação")
 ```
-Há bastante coisa a se notar nesse gráfico, primeiramente pelos episódios 200 e 400, existe um indicio de alteração na média das variáveis aleatórias, portanto furando o pressuposto de média constante ao longo do tempo, perto dos episódios finais da saga nota-se  também inúmeras quedas bruscas na avaliação sem um contra-peso de avaliações com notas altas, outro indicio de não estacionariedade.  
+Há bastante coisa a se notar nesse gráfico, primeiramente pelos episódios 200 e 400, existe um indício de alteração na média das variáveis aleatórias, portanto furando o pressuposto de média constante ao longo do tempo, perto dos episódios finais da saga nota-se  também inúmeras quedas bruscas na avaliação sem um contra-peso de avaliações com notas altas, outro indicio de não estacionariedade.  
 É importante tentarmos entender um pouco sobre esses episódios com notas baixas, assim vamos ver esse gráfico pelo tipo de episódio.
 
 ```{r}
-df %>% 
-  ggplot(aes(x=numero_episodio,y=rate,color=Tipo,group=1)) +
-  geom_line()+
-  labs(x="Numero do episódio",y="Avaliação")+
-  ggplot2::scale_color_manual(breaks = c(levels(as.factor(df$Tipo))), values = c("#EA2129", "#F78D69", "#74BDCB"))
+df %>%
+  ggplot(aes(x = numero_episodio, y = rate, color = Tipo, group = 1)) +
+  geom_line() +
+  labs(x = "Numero do episódio", y = "Avaliação") +
+  ggplot2::scale_color_manual(breaks = c(levels(as.factor(df$Tipo))), values = c("#EA2129", "#E08223", "#1CD0AD"))
 ```
 Assim fica fácil ver que os episódios com menor avaliação são em sua maior parte fillers, toda queda brusca de avaliação tem um episódio filler envolvido.
+
+É necessário também avaliar a correlação nas avaliações:
+```{r}
+## esse pacote aqui tem problemas, forecast::ggAcf(df$rate) não funciona, sou obrigado a dar library
+
+library(forecast)
+ggAcf(df$rate, lag.max = 35, type = c("correlation")) +
+  labs(title = "Função de autocorrelação")
+```
+Uma abordagem importante também é decompor a série temporal, apriori supõe-se a existência de três elementos, a saber: Tendência, sazonalidade e resíduo. Todos esses serão explorados cuidadosamente nas seções posteriores, assim vamos decompor a série para ter um vislumbre de tais elementos:
+
+```{r}
+decompose <- forecast::mstl(df$rate)
+decompose |> autoplot()
+```
+```{r}
+# normal K
+data.frame(decompose)$Remainder |>
+  shapiro.test()
+```
+
 
 
 # Testes
@@ -111,64 +154,137 @@ $$
 H_0:\text{A série possui tendência determistica}
 $$
 ```{r}
-kendal=trend::mk.test(df$rate)
-wald=trend::ww.test(df$rate)
-stuart=trend::cs.test(df$rate)
-
-
+kendal <- trend::mk.test(df$rate)
+wald <- trend::ww.test(df$rate)
+stuart <- trend::cs.test(df$rate)
+tab1 <- as.data.frame(c("Cox-Stuart", "Wald-Wolfowitz", "Mann-Kendall"))
+tab1[, 2] <- c(stuart$p.value, wald$p.value, kendal$p.value)
+names(tab1) <- c("Testes", "P-valor")
+tab1$`P-valor` <- round(tab1$`P-valor`, 4)
+tab1$`P-valor` <- ifelse(tab1$`P-valor` < 0.05, ifelse(tab1$`P-valor` < 0.0001, "<0,0001*", paste0(as.character(tab1$`P-valor`), "*")), tab1$`P-valor`)
 ```
-##E Testes de Raiz unitária
 
 ```{r}
-kpss=tseries::kpss.test(df$rate, null=c("Level","Trend"), lshort=TRUE)
-adf=tseries::adf.test(df$rate)
-pp=tseries::pp.test(df$rate)
-
-
+tab1 %>%
+  mypdf1::pdf1_tbl("Testes de Tendência Deterministica")
 ```
 
+Conformem mostrado pela Tabela anterior podemos ver que pelos testes de 
+Cox-Stuart, Wald-Wolfowitz, Mann-Kendall, com índice de significância de 5%, temos que todos os p-valores são menores que 0,05, então concluímos que existe tendência determinística na série temporal. 
 
 
 ### Sazonalidade
 Sazonalidade acontece quando a série possui um comportamento que se repete frequencialmente 
 
 ```{r}
-krusk=seastests::kw(df$rate,freq = 7)
-friedman=seastests::fried(df$rate,freq=7)
-tqs=seastests::qs(df$rate,freq=7)
-
+krusk <- seastests::kw(df$rate, freq = 7)
+friedman <- seastests::fried(df$rate, freq = 7)
+tqs <- seastests::qs(df$rate, freq = 7)
+tab2 <- as.data.frame(c("Kruskal-Wallis", "Friedman", "Autocorrelação em lags Sazonais"))
+tab2[, 2] <- c(krusk$Pval, friedman$Pval, tqs$Pval)
+names(tab2) <- c("Testes", "P-valor")
+tab2$`P-valor` <- round(tab2$`P-valor`, 4)
+tab2$`P-valor` <- ifelse(tab2$`P-valor` < 0.05, ifelse(tab2$`P-valor` < 0.0001, "<0,0001*", paste0(as.character(tab2$`P-valor`), "*")), tab2$`P-valor`)
 ```
+
+```{r}
+tab2 %>%
+  mypdf1::pdf1_tbl("Testes de Sazonalidade")
+```
+
+Conformem mostrado pela Tabela anterior podemos ver que pelos testes de 
+Kruskal-Wallis, Friedman, Autocorrelação em lags Sazonais, com índice de significância de 5%, temos que todos os p-valores são maiores que 0,05, então concluímos que não existe sazonalidade. 
+
+### Testes de Raiz unitária
+Para começar tal seção, primeiros vamos definir um passeio aleatório em sua forma simplificada:
+$$
+Y_t=Y_{t-1}+\epsilon_t
+$$
+Onde t refere-se aos indíces de ordenação, e $\epsilon$  um termo aleatório, para facilidade vamos assumir que $E(\epsilon_t)=\mu$ e $var(\epsilon_t)=\sigma^2$ $\forall t$, assim subtraindo-se $Y_{t-1}$ em ambos os lados tem-se $$Y_t-Y_{t-1}=\epsilon_t$$ que é um processo estacionário, o processo anterior é dito processo estacionário em diferença, em outros casos também chamado de processo integrado. O exemplo anterior trata-se de um caso mais geral $$Y_t=\phi Y_{t-1}+\epsilon_t$$ onde evidentemente $\phi=1$, é fácil mostrar que se $|\phi|<1$ tem-se um processo estocástico, aqui portanto, estamos interessados nesse caso, para isso utilizaremos  testes de hipótese. 
+
+Fala-se também que o caso anterior na forma simplificada possui raiz unitária, por causa do operador Lag, aqui não definido, porém  pode-se ler sobre em @morettin2018analise
+
+```{r}
+kpss <- tseries::kpss.test(df$rate, null = c("Level", "Trend"), lshort = TRUE)
+adf <- tseries::adf.test(df$rate)
+pp <- tseries::pp.test(df$rate)
+tab3 <- as.data.frame(c("Kwiatkowski-Phillips-Schmidt-Shin (KPSS)", "Augmented Dickey-Fuller (ADF)", "Phillips-Perron (PP)"))
+tab3[, 2] <- c(kpss$p.value, adf$p.value, pp$p.value)
+names(tab3) <- c("Testes", "P-valor")
+tab3$`P-valor` <- round(tab3$`P-valor`, 4)
+tab3$`P-valor` <- ifelse(tab3$`P-valor` < 0.05, ifelse(tab3$`P-valor` < 0.0001, "<0,0001*", paste0(as.character(tab3$`P-valor`), "*")), tab3$`P-valor`)
+```
+
+```{r}
+tab3 %>%
+  mypdf1::pdf1_tbl("Testes de Tendência Estocástica")
+```
+
+Conforme mostrado pela Tabela anterior podemos ver que pelos testes de 
+Dickey-Fuller Aumentado, Phillips-Perron, KPSS, com índice de significância de 5%, temos que os p-valores dos testes ADF e PP são menores que 0,05 e do teste KPSS é maior que 0,05, então concluímos que não existe tendência estocástica na série temporal. Pois, nos testes ADF e PP, a hipótese nula é a existência de raiz unitária e no teste de KPSS, a hipótese nula é não existência de raiz unitária.
 
 
 # Modelagem
 
 
-# Tabelas e resultados MYPDF1 ENTROU NO CHAT
-# Referências
-
 
 ```{r }
-t=df %>% 
-  ggplot(aes(numero_episodio,rate))+
-  geom_line(size=0.8,color="#050A03")+
-  theme_void()+
+t <- df %>%
+  ggplot(aes(numero_episodio, rate)) +
+  geom_line(size = 0.8, color = "#050A03") +
+  theme_void() +
   labs("Série")
-t %>% 
-ggimage::ggbackground(background="https://www.ixpap.com/images/2021/03/desktop-naruto-wallpaper-ixpap.jpg")    
+t %>%
+  ggimage::ggbackground(background = "https://www.ixpap.com/images/2021/03/desktop-naruto-wallpaper-ixpap.jpg")
 ```
 
 
 ```{r }
-df %>% 
-  group_by(Saga) %>% 
-  summarise(mean=mean(rate)) %>% 
+df %>%
+  group_by(Saga) %>%
+  summarise(mean = mean(rate)) %>%
   arrange(desc(mean))
 ```
 
+## Médias Móveis Simples
+
 ```{r}
-
-
-
+mms <- TTR::SMA(df$rate, n = 21)
+df1 <- cbind(df, mms)
+df1 %>%
+  ggplot(aes(x = numero_episodio)) +
+  geom_line(aes(y = rate, colour = "SerieNormal")) +
+  geom_line(aes(y = mms, colour = "MediaMovel")) +
+  labs(x = "Numero do episódio", y = "Avaliação") +
+  scale_colour_manual("",
+    breaks = c("SerieNormal", "MediaMovel"),
+    values = c(
+      "SerieNormal" = "#1EAB78",
+      "MediaMovel" = "#CF6520"
+    )
+  )
 ```
 
+## Regressão LOESS
 
+```{r}
+op1 <- optim(par = c(0.5), fn = calcSSE, method = "SANN", data = df1, regressor = "rate", time = "Time")
+
+rl1 <- loess(rate ~ as.numeric(Time), data = df1, span = op1$par)
+prl <- predict(rl1, as.numeric(df1$Time), se = T)
+df1 <- cbind(df, prl$fit)
+df1 %>%
+  ggplot(aes(x = numero_episodio)) +
+  geom_line(aes(y = rate, colour = "SerieNormal")) +
+  geom_line(aes(y = `prl$fit`, colour = "RegLoess")) +
+  labs(x = "Numero do episódio", y = "Avaliação") +
+  scale_colour_manual("",
+    breaks = c("SerieNormal", "RegLoess"),
+    values = c(
+      "SerieNormal" = "#1EAB78",
+      "RegLoess" = "#CF6520"
+    )
+  )
+```
+
+# Referências
