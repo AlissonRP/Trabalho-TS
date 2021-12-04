@@ -1,7 +1,7 @@
 ---
 title: "O GRANDE TÍTULO"
-author: "Alisson Rosa"
-abstract: "Aqui você escreve o resumo"
+author: "Alisson Rosa e Vítor Pereira"
+abstract: "One Piece > Naruto"
 header-includes:
    - \usepackage[brazil]{babel}
    - \usepackage{bm}
@@ -56,6 +56,19 @@ scale_fill_alisson <- function(...) {
     )
   )
 }
+
+calcSSE <- function(data, regressor, time, x){
+  loessMod <- try(loess(eval(parse(text=paste(regressor, '~', paste('as.numeric(', time, ')', sep=''), sep = ' '))), data=data, span=x), silent=T)
+  res <- try(loessMod$residuals, silent=T)
+  if(class(res)!="try-error"){
+      sse <- sum(res^2)  
+
+  }else{
+    sse <- 99999
+  }
+  return(sse)
+}
+
 scale_fill_discrete <- \(...) scale_fill_alisson(...)
 ```
 
@@ -146,10 +159,21 @@ $$
 kendal=trend::mk.test(df$rate)
 wald=trend::ww.test(df$rate)
 stuart=trend::cs.test(df$rate)
-
+tab1<-as.data.frame(c("Cox-Stuart", "Wald-Wolfowitz", "Mann-Kendall"))
+tab1[,2]<-c(stuart$p.value, wald$p.value, kendal$p.value)
+names(tab1) <- c("Testes", "P-valor")
+tab1$`P-valor` <- round(tab1$`P-valor`,4)
+tab1$`P-valor` <- ifelse(tab1$`P-valor` < 0.05, ifelse(tab1$`P-valor` < 0.0001, '<0,0001*',paste0(as.character(tab1$`P-valor`), "*")),  tab1$`P-valor`)
 
 ```
 
+```{r}
+tab1%>%  
+ mypdf1::pdf1_tbl("Testes de Tendência Deterministica")
+```
+
+Conformem mostrado pela Tabela anterior podemos ver que pelos testes de 
+Cox-Stuart, Wald-Wolfowitz, Mann-Kendall, com índice de significância de 5%, temos que todos os p-valores são menores que 0,05, então concluímos que existe tendência determinística na série temporal. 
 
 
 ### Sazonalidade
@@ -159,8 +183,22 @@ Sazonalidade acontece quando a série possui um comportamento que se repete freq
 krusk=seastests::kw(df$rate,freq = 7)
 friedman=seastests::fried(df$rate,freq=7)
 tqs=seastests::qs(df$rate,freq=7)
+tab2<-as.data.frame(c("Kruskal-Wallis", "Friedman", "Autocorrelação em lags Sazonais"))
+tab2[,2]<-c(krusk$Pval, friedman$Pval, tqs$Pval)
+names(tab2) <- c("Testes", "P-valor")
+tab2$`P-valor` <- round(tab2$`P-valor`,4)
+tab2$`P-valor` <- ifelse(tab2$`P-valor` < 0.05, ifelse(tab2$`P-valor` < 0.0001, '<0,0001*',paste0(as.character(tab2$`P-valor`), "*")),  tab2$`P-valor`)
 
 ```
+
+```{r}
+tab2%>%  
+ mypdf1::pdf1_tbl("Testes de Sazonalidade")
+```
+
+Conformem mostrado pela Tabela anterior podemos ver que pelos testes de 
+Kruskal-Wallis, Friedman, Autocorrelação em lags Sazonais, com índice de significância de 5%, temos que todos os p-valores são maiores que 0,05, então concluímos que não existe sazonalidade. 
+
 ### Testes de Raiz unitária
 Para começar tal seção, primeiros vamos definir um passeio aleatório em sua forma simplificada:
 $$
@@ -174,15 +212,24 @@ Fala-se também que o caso anterior na forma simplificada possui raiz unitária,
 kpss=tseries::kpss.test(df$rate, null=c("Level","Trend"), lshort=TRUE)
 adf=tseries::adf.test(df$rate)
 pp=tseries::pp.test(df$rate)
-
+tab3<-as.data.frame(c("Kwiatkowski-Phillips-Schmidt-Shin (KPSS)", "Augmented Dickey-Fuller (ADF)", "Phillips-Perron (PP)"))
+tab3[,2]<-c(kpss$p.value, adf$p.value, pp$p.value)
+names(tab3) <- c("Testes", "P-valor")
+tab3$`P-valor` <- round(tab3$`P-valor`,4)
+tab3$`P-valor` <- ifelse(tab3$`P-valor` < 0.05, ifelse(tab3$`P-valor` < 0.0001, '<0,0001*',paste0(as.character(tab3$`P-valor`), "*")),  tab3$`P-valor`)
 
 ```
 
+```{r}
+tab3%>%  
+ mypdf1::pdf1_tbl("Testes de Tendência Estocástica")
+```
+
+Conforme mostrado pela Tabela anterior podemos ver que pelos testes de 
+Dickey-Fuller Aumentado, Phillips-Perron, KPSS, com índice de significância de 5%, temos que os p-valores dos testes ADF e PP são menores que 0,05 e do teste KPSS é maior que 0,05, então concluímos que não existe tendência estocástica na série temporal. Pois, nos testes ADF e PP, a hipótese nula é a existência de raiz unitária e no teste de KPSS, a hipótese nula é não existência de raiz unitária.
+
 
 # Modelagem
-
-
-
 
 
 
@@ -204,10 +251,40 @@ df %>%
   arrange(desc(mean))
 ```
 
-```{r}
+## Médias Móveis Simples
 
+```{r}
+mms <- TTR::SMA(df$rate, n =21)
+df1<-cbind(df,mms)
+df1 %>% 
+  ggplot(aes(x=numero_episodio)) +
+  geom_line(aes(y=rate, colour="SerieNormal")) +
+  geom_line(aes(y=mms, colour="MediaMovel"))+
+  labs(x="Numero do episódio",y="Avaliação") + 
+  scale_colour_manual("", breaks = c("SerieNormal","MediaMovel"),
+                      values = c("SerieNormal"="#1EAB78",
+                                 "MediaMovel"="#CF6520"))
+```
+
+## Regressão LOESS
+
+```{r}
+op1 <- optim(par=c(0.5), fn = calcSSE, method="SANN", data = df1, regressor = 'rate', time = 'Time')
+
+rl1 <- loess(rate ~ as.numeric(Time), data=df1, span=op1$par)
+prl <- predict(rl1, as.numeric(df1$Time),  se=T)
+df1<-cbind(df,prl$fit)
+df1 %>% 
+  ggplot(aes(x=numero_episodio)) +
+  geom_line(aes(y=rate, colour="SerieNormal")) +
+  geom_line(aes(y=`prl$fit`, colour="RegLoess"))+
+  labs(x="Numero do episódio",y="Avaliação") + 
+  scale_colour_manual("", breaks = c("SerieNormal","RegLoess"),
+                      values = c("SerieNormal"="#1EAB78",
+                                 "RegLoess"="#CF6520"))
 
 ```
+
 # Referências
 
 
