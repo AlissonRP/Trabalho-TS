@@ -25,6 +25,8 @@ link-citations: true
 options(digits = 3) # Arrendodamento
 ggplot2::theme_set(ggplot2::theme_minimal()) # Tema dos gráficos produzidos no ggplot2
 knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.85)
+#devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
+
 library(tidyverse)
 ```
 
@@ -169,12 +171,17 @@ tab1 %>%
   mypdf1::pdf1_tbl("Testes de Tendência Deterministica")
 ```
 
-Conformem mostrado pela Tabela anterior podemos ver que pelos testes de 
-Cox-Stuart, Wald-Wolfowitz, Mann-Kendall, com índice de significância de 5%, temos que todos os p-valores são menores que 0,05, então concluímos que existe tendência determinística na série temporal. 
+Conforme mostrado pela Tabela anterior podemos ver que pelos testes de 
+Cox-Stuart, Wald-Wolfowitz, Mann-Kendall, com índice de significância de 5%, temos que todos os p-valores são menores que 0.05, então concluímos que existe tendência determinística na série temporal. 
 
 
 ### Sazonalidade
-Sazonalidade acontece quando a série possui um comportamento que se repete frequencialmente 
+Sazonalidade acontece quando a série possui um comportamento que se repete frequencialmente, vamos nessa subseção testar se existe sazonalidade nas avaliação dos episódios, assim temos como hipótese:
+$$
+H_0:\text{A série possui sazonalidaade}
+$$
+Os testes aplicados  foram 
+Kruskal-Wallis, Friedman e Autocorrelação em lags Sazonais, assim gerando a seguite tabela:
 
 ```{r}
 krusk <- seastests::kw(df$rate, freq = 7)
@@ -192,8 +199,7 @@ tab2 %>%
   mypdf1::pdf1_tbl("Testes de Sazonalidade")
 ```
 
-Conformem mostrado pela Tabela anterior podemos ver que pelos testes de 
-Kruskal-Wallis, Friedman, Autocorrelação em lags Sazonais, com índice de significância de 5%, temos que todos os p-valores são maiores que 0,05, então concluímos que não existe sazonalidade. 
+Assim podemos ver que pelos testes aplicados com índice de significância de 5%,  concluímos que não existe sazonalidade. 
 
 ### Testes de Raiz unitária
 Para começar tal seção, primeiros vamos definir um passeio aleatório em sua forma simplificada:
@@ -221,7 +227,7 @@ tab3 %>%
 ```
 
 Conforme mostrado pela Tabela anterior podemos ver que pelos testes de 
-Dickey-Fuller Aumentado, Phillips-Perron, KPSS, com índice de significância de 5%, temos que os p-valores dos testes ADF e PP são menores que 0,05 e do teste KPSS é maior que 0,05, então concluímos que não existe tendência estocástica na série temporal. Pois, nos testes ADF e PP, a hipótese nula é a existência de raiz unitária e no teste de KPSS, a hipótese nula é não existência de raiz unitária.
+Dickey-Fuller Aumentado, Phillips-Perron, KPSS, com índice de significância de 5%, temos que os p-valores dos testes ADF e PP são menores que 0.05 e do teste KPSS é maior que 0.05, então concluímos que não existe tendência estocástica na série temporal. Pois, nos testes ADF e PP, a hipótese nula é a existência de raiz unitária e no teste de KPSS, a hipótese nula é não existência de raiz unitária.
 
 
 # Modelagem
