@@ -5,7 +5,7 @@ abstract: "One Piece > Naruto"
 header-includes:
    - \usepackage[brazil]{babel}
    - \usepackage{bm}
-geometry: margin=2cm
+geometry: left=1.7cm, right=1.7cm, top=2.5cm, bottom=2.2cm
 output:
   bookdown::pdf_document2:
 editor_options:
@@ -16,6 +16,7 @@ csl: statistics.csl
 nocite: '@*'
 link-citations: true
 
+
 ---
 
 
@@ -24,8 +25,8 @@ link-citations: true
 
 options(digits = 3) # Arrendodamento
 ggplot2::theme_set(ggplot2::theme_minimal()) # Tema dos gráficos produzidos no ggplot2
-knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.85)
-#devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.7)
+# devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
 
 library(tidyverse)
 ```
@@ -78,7 +79,7 @@ scale_fill_discrete <- \(...) scale_fill_alisson(...)
 
 # Introdução
 Naruto é uma animação japonesa (anime)  que adapta a  série de mangá escrita e ilustrada por Masashi Kishimoto, que conta a história de Naruto Uzumaki, um jovem ninja que constantemente procura por reconhecimento e sonha em se tornar Hokage, o ninja líder de sua vila.  
-A história é dividida em duas partes, a primeira parte se passa nos anos da pré-adolescência de Naruto (clássico), e a segunda parte se passa em sua adolescência (Shippuden). Nesse trabalho trataremos sobre o Naruto Shippuden, desenvolvendo-o em uma perpestiva de séries temporais, a variável a ser estudada será a avaliação dos episódios, assim veremos  pontos importantes da saga ao longo do tempo.  
+A história é dividida em duas partes, a primeira parte se passa nos anos da pré-adolescência de Naruto (clássico), e a segunda parte se passa em sua adolescência (Shippuden). Nesse trabalho trataremos sobre o Naruto Shippuden, desenvolvendo-o em uma perpestiva de séries temporais, vamos adotar como variável de interesse  a avaliação dos episódios, assim veremos  pontos importantes da saga ao longo do tempo.   
 O Banco de dados utilizado é totalmente original, foi criado fazendo *Web scraping* de dois sites diferentes, para aqueles interessados o banco foi dispobilizado [aqui](https://www.kaggle.com/alisson987/naruto-shippuden-rate).
 
 
