@@ -257,6 +257,7 @@ df %>%
 
 ```{r}
 mms <- TTR::SMA(df$rate, n = 21)
+snaive(df$rate, h=50)
 df1 <- cbind(df, mms)
 df1 %>%
   ggplot(aes(x = numero_episodio)) +
@@ -272,18 +273,36 @@ df1 %>%
   )
 ```
 
+## Média Móvel Simples com Previsão
+Utilizando o pacote smooth.
+
+```{r}
+mms1 <- smooth::sma(df$rate, order=21,silent=FALSE, interval= 'p')
+fit_forecast<- data.frame(forecast= c(mms1$fitted,mms1$forecast), n = 1:length(c(mms1$fitted,mms1$forecast)))
+ICbands <- data.frame(upper=mms1$upper, lower=mms1$lower, n=(length(mms1$fitted)+1):(length(mms1$fitted) +length(mms1$forecast)))
+p <- ggplot()
+p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
+p <- p + geom_ribbon(data=ICbands, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
+p <- p + geom_line(data=fit_forecast,aes(x=n,y = forecast, colour = "Forecast"))
+p <- p + geom_vline(xintercept=max(df1$numero_episodio))
+p
+
+```
+
+
 ## Regressão LOESS
 
 ```{r}
 op1 <- optim(par = c(0.5), fn = calcSSE, method = "SANN", data = df1, regressor = "rate", time = "Time")
-
 rl1 <- loess(rate ~ as.numeric(Time), data = df1, span = op1$par)
+###predict(rl1,seq(as.Date("2017-03-23"), length = 5, by = 'week'))
 prl <- predict(rl1, as.numeric(df1$Time), se = T)
 df1 <- cbind(df, prl$fit)
 df1 %>%
   ggplot(aes(x = numero_episodio)) +
   geom_line(aes(y = rate, colour = "SerieNormal")) +
   geom_line(aes(y = `prl$fit`, colour = "RegLoess")) +
+  geom_ribbon(aes(ymin=prl$fit-prl$se.fit, ymax=prl$fit+prl$se.fit, alpha = 0.05)) +
   labs(x = "Numero do episódio", y = "Avaliação") +
   scale_colour_manual("",
     breaks = c("SerieNormal", "RegLoess"),

@@ -1,11 +1,11 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.11.17)  4 DEC 2021 05:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.12.30)  7 JAN 2022 22:11
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **relat.tex
 (./relat.tex
-LaTeX2e <2021-11-15>
-L3 programming layer <2021-11-12> (c:/Users/user/AppData/Roaming/TinyTeX/texmf-
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2021-11-22> (c:/Users/user/AppData/Roaming/TinyTeX/texmf-
 dist/tex/latex/base/article.cls
 Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/size10.clo
@@ -426,8 +426,12 @@ Package graphics Info: Driver file: pdftex.def on input line 107.
 )
 \Gin@req@height=\dimen179
 \Gin@req@width=\dimen180
-) (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/generic/babel/babel.sty
-Package: babel 2021/11/08 3.66 The Babel package
+)
+\cslhangindent=\skip62
+\csllabelwidth=\skip63
+\cslentryspacingunit=\skip64
+(c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/generic/babel/babel.sty
+Package: babel 2021/12/28 3.68 The Babel package
 \babel@savecnt=\count295
 \U@D=\dimen181
 \l@unhyphenated=\language3
@@ -465,9 +469,9 @@ LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 149.
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/multirow/multirow.s
 ty
 Package: multirow 2021/03/15 v2.8 Span multiple rows of a table
-\multirow@colwidth=\skip62
+\multirow@colwidth=\skip65
 \multirow@cntb=\count297
-\multirow@dima=\skip63
+\multirow@dima=\skip66
 \bigstrutjot=\dimen182
 )
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/wrapfig/wrapfig.sty
@@ -489,7 +493,7 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 ty
 Package: colortbl 2020/01/04 v1.0e Color table columns (DPC)
 \everycr=\toks30
-\minrowclearance=\skip64
+\minrowclearance=\skip67
 )
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/pdflscape/pdflscape
 .sty
@@ -531,7 +535,7 @@ Package: varwidth 2009/03/30 ver 0.92;  Variable-width minipages
 \tabu@arstrutbox=\box65
 \tabu@hleads=\box66
 \tabu@vleads=\box67
-\tabu@cellskip=\skip65
+\tabu@cellskip=\skip68
 )
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/threeparttable/thre
 eparttable.sty
@@ -549,11 +553,11 @@ Package: environ 2014/05/04 v0.3 A new way to define environments
 es.sty
 Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
 ))
-\TPTL@width=\skip66
+\TPTL@width=\skip69
 ) (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/generic/ulem/ulem.sty
 \UL@box=\box69
 \UL@hyphenbox=\box70
-\UL@skip=\skip67
+\UL@skip=\skip70
 \UL@hook=\toks33
 \UL@height=\dimen196
 \UL@pe=\count307
@@ -569,35 +573,32 @@ Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
 \c@nlinenum=\count308
 \TeXr@lab=\toks34
 )
-\cslhangindent=\skip68
-\csllabelwidth=\skip69
-
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend
 -pdftex.def
-File: l3backend-pdftex.def 2021-10-18 L3 backend support: PDF output (pdfTeX)
+File: l3backend-pdftex.def 2021-12-14 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count309
 \l__pdf_internal_box=\box72
 ) (./relat.aux)
 \openout1 = `relat.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
 
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstop
 df-base.sty
@@ -610,7 +611,7 @@ f-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 106.
+Package hyperref Info: Link coloring OFF on input line 109.
 
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/hyperref/nameref.st
 y
@@ -626,9 +627,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count310
 )
-LaTeX Info: Redefining \ref on input line 106.
-LaTeX Info: Redefining \pageref on input line 106.
-LaTeX Info: Redefining \nameref on input line 106.
+LaTeX Info: Redefining \ref on input line 109.
+LaTeX Info: Redefining \pageref on input line 109.
+LaTeX Info: Redefining \nameref on input line 109.
 (./relat.out) (./relat.out)
 \@outlinefile=\write3
 \openout3 = `relat.out'.
@@ -641,15 +642,15 @@ LaTeX Info: Redefining \nameref on input line 106.
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: 
-* h-part:(L,W,R)=(56.9055pt, 500.484pt, 56.9055pt)
-* v-part:(T,H,B)=(56.9055pt, 681.15898pt, 56.9055pt)
+* h-part:(L,W,R)=(48.36958pt, 517.55583pt, 48.36958pt)
+* v-part:(T,H,B)=(71.13188pt, 661.24214pt, 62.59596pt)
 * \paperwidth=614.295pt
 * \paperheight=794.96999pt
-* \textwidth=500.484pt
-* \textheight=681.15898pt
-* \oddsidemargin=-15.36449pt
-* \evensidemargin=-15.36449pt
-* \topmargin=-52.36449pt
+* \textwidth=517.55583pt
+* \textheight=661.24214pt
+* \oddsidemargin=-23.9004pt
+* \evensidemargin=-23.9004pt
+* \topmargin=-38.1381pt
 * \headheight=12.0pt
 * \headsep=25.0pt
 * \topskip=10.0pt
@@ -668,37 +669,37 @@ LaTeX Info: Redefining \nameref on input line 106.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
-08.
+11.
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
-08.
+11.
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-108.
+111.
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-108.
+111.
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 108.
+(Font)              <12> on input line 111.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 108.
+(Font)              <8> on input line 111.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 108.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 108
+(Font)              <6> on input line 111.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 111
 .
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 108
+LaTeX Font Info:    Trying to load font information for U+msb on input line 111
 .
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -713,120 +714,137 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 \tf@toc=\write4
 \openout4 = `relat.toc'.
 
-<relat_files/figure-latex/plttipo-1.pdf, id=40, 563.10374pt x 278.03876pt>
+<relat_files/figure-latex/plttipo-1.pdf, id=45, 563.10374pt x 266.9975pt>
 File: relat_files/figure-latex/plttipo-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/plttipo-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/plttipo-1.pdf  used on input 
-line 129.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
+line 132.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
 [1
 
 {c:/Users/user/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex
 .map}]
-<relat_files/figure-latex/unnamed-chunk-3-1.pdf, id=57, 563.10374pt x 278.03876
-pt>
+<relat_files/figure-latex/unnamed-chunk-3-1.pdf, id=62, 563.10374pt x 266.9975p
+t>
 File: relat_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-3-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-3-1.pdf  used o
-n input line 152.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
+n input line 155.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
 [2pdfTeX warning (ext4): destination with the same identifier (name{table.1}) h
 as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.156 
-       <./relat_files/figure-latex/plttipo-1.pdf> <./relat_files/figure-latex/u
-nnamed-chunk-3-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-4-1.pdf, id=73, 563.10374pt x 278.03876
-pt>
+l.155 ...ure-latex/unnamed-chunk-3-1} \end{center}
+                                                   <./relat_files/figure-latex/
+plttipo-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-4-1.pdf, id=73, 563.10374pt x 266.9975p
+t>
 File: relat_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-4-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-4-1.pdf  used o
-n input line 157.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
-<relat_files/figure-latex/unnamed-chunk-5-1.pdf, id=74, 563.10374pt x 278.03876
-pt>
+n input line 160.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+<relat_files/figure-latex/unnamed-chunk-5-1.pdf, id=74, 563.10374pt x 266.9975p
+t>
 File: relat_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-5-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-5-1.pdf  used o
-n input line 163.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
-[3 <./relat_files/figure-latex/unnamed-chunk-4-1.pdf> <./relat_files/figure-lat
-ex/unnamed-chunk-5-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-6-1.pdf, id=89, 563.10374pt x 278.03876
-pt>
+n input line 166.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+[3 <./relat_files/figure-latex/unnamed-chunk-3-1.pdf> <./relat_files/figure-lat
+ex/unnamed-chunk-4-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-6-1.pdf, id=89, 563.10374pt x 266.9975p
+t>
 File: relat_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-6-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-6-1.pdf  used o
-n input line 167.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
+n input line 170.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
-69.
+72.
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [4pdfTeX warning (ext4): destination with the same identifier (name{table.2})
- has been already used, duplicate ignored
+) [4 <./relat_files/figure-latex/unnamed-chunk-5-1.pdf> <./relat_files/figure-l
+atex/unnamed-chunk-6-1.pdf>] [5pdfTeX warning (ext4): destination with the same
+ identifier (name{table.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.230 \end{table}
-                  <./relat_files/figure-latex/unnamed-chunk-6-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-14-1.pdf, id=109, 563.10374pt x 278.038
-76pt>
+l.251 F
+       ala-se também que o caso anterior na forma simplificada possui raiz ...
+pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has
+ been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.251 F
+       ala-se também que o caso anterior na forma simplificada possui raiz ...
+]
+<relat_files/figure-latex/unnamed-chunk-14-1.pdf, id=125, 563.10374pt x 266.997
+5pt>
 File: relat_files/figure-latex/unnamed-chunk-14-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-14-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-14-1.pdf  used 
-on input line 269.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
-[5pdfTeX warning (ext4): destination with the same identifier (name{table.3}) h
+on input line 276.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+[6pdfTeX warning (ext4): destination with the same identifier (name{table.4}) h
 as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.269 ...re-latex/unnamed-chunk-14-1} \end{center}
-                                                  pdfTeX warning (ext4): destin
-ation with the same identifier (name{table.4}) has been already used, duplicate
- ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.269 ...re-latex/unnamed-chunk-14-1} \end{center}
-                                                  ]
-<relat_files/figure-latex/unnamed-chunk-16-1.pdf, id=124, 563.10374pt x 278.038
-76pt>
+l.293 \end{verbatim}
+                     <./relat_files/figure-latex/unnamed-chunk-14-1.pdf>] [7]
+<relat_files/figure-latex/unnamed-chunk-16-1.pdf, id=143, 563.10374pt x 266.997
+5pt>
 File: relat_files/figure-latex/unnamed-chunk-16-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-16-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-16-1.pdf  used 
-on input line 291.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
-[6 <./relat_files/figure-latex/unnamed-chunk-14-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-17-1.pdf, id=134, 563.10374pt x 278.038
-76pt>
+on input line 352.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+<relat_files/figure-latex/unnamed-chunk-17-1.pdf, id=144, 563.10374pt x 266.997
+5pt>
 File: relat_files/figure-latex/unnamed-chunk-17-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-17-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-17-1.pdf  used 
-on input line 296.
-(pdftex.def)             Requested size: 500.49057pt x 247.12279pt.
+on input line 359.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+<relat_files/figure-latex/unnamed-chunk-17-2.pdf, id=145, 563.10374pt x 266.997
+5pt>
+File: relat_files/figure-latex/unnamed-chunk-17-2.pdf Graphic file (type pdf)
+<use relat_files/figure-latex/unnamed-chunk-17-2.pdf>
+Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-17-2.pdf  used 
+on input line 361.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+[8 <./relat_files/figure-latex/unnamed-chunk-16-1.pdf> <./relat_files/figure-la
+tex/unnamed-chunk-17-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-18-1.pdf, id=163, 563.10374pt x 266.997
+5pt>
+File: relat_files/figure-latex/unnamed-chunk-18-1.pdf Graphic file (type pdf)
+<use relat_files/figure-latex/unnamed-chunk-18-1.pdf>
+Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-18-1.pdf  used 
+on input line 366.
+(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
 
-Overfull \hbox (2.22221pt too wide) in paragraph at lines 304--307
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 374--377
 [] []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 304--307
+Underfull \hbox (badness 10000) in paragraph at lines 374--377
 
  []
 
-[7 <./relat_files/figure-latex/unnamed-chunk-16-1.pdf> <./relat_files/figure-la
-tex/unnamed-chunk-17-1.pdf>] (./relat.aux)
+[9 <./relat_files/figure-latex/unnamed-chunk-17-2.pdf> <./relat_files/figure-la
+tex/unnamed-chunk-18-1.pdf>] (./relat.aux)
 Package rerunfilecheck Info: File `relat.out' has not changed.
-(rerunfilecheck)             Checksum: 59B4932CE498A2601061F83C888E98C5;778.
+(rerunfilecheck)             Checksum: E41E1135C770CE9E66BE26DA651C917C;1016.
  ) 
 Here is how much of TeX's memory you used:
- 13848 strings out of 480331
- 221918 string characters out of 5896290
- 531005 words of memory out of 5000000
- 31384 multiletter control sequences out of 15000+600000
+ 13876 strings out of 480313
+ 223013 string characters out of 5895863
+ 544513 words of memory out of 5000000
+ 31424 multiletter control sequences out of 15000+600000
  486960 words of font info for 90 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,9n,63p,746b,418s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,9n,63p,746b,493s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-maths
 y.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-m
 athit.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/
@@ -846,10 +864,10 @@ exmf-dist/fonts/type1/public/lm/lmr9.pfb><c:/Users/user/AppData/Roaming/TinyTeX
 yTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/user/AppData/Roaming
 /TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy7.pfb><c:/Users/user/AppData/Roam
 ing/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on relat.pdf (7 pages, 1297633 bytes).
+Output written on relat.pdf (9 pages, 1324563 bytes).
 PDF statistics:
- 228 PDF objects out of 1000 (max. 8388607)
- 171 compressed objects within 2 object streams
- 35 named destinations out of 1000 (max. 500000)
- 97 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 261 PDF objects out of 1000 (max. 8388607)
+ 198 compressed objects within 2 object streams
+ 39 named destinations out of 1000 (max. 500000)
+ 115 words of extra memory for PDF output out of 10000 (max. 10000000)
 
