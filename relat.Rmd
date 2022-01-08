@@ -15,6 +15,7 @@ bibliography: bib.bib
 csl: statistics.csl
 nocite: '@*'
 link-citations: true
+always_allow_html: true
 
 
 ---
@@ -31,8 +32,7 @@ knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.ali
 library(tidyverse)
 library(tidymodels)
 library(modeltime)
-library(fable)
-library(tsibble)
+library(forecast)
 ```
 
 ```{r functions}
@@ -133,7 +133,6 @@ Assim fica fácil ver que os episódios com menor avaliação são em sua maior 
 ```{r}
 ## esse pacote aqui tem problemas, forecast::ggAcf(df$rate) não funciona, sou obrigado a dar library
 
-library(forecast)
 ggAcf(df$rate, lag.max = 35, type = c("correlation")) +
   labs(title = "Função de autocorrelação")
 ```
@@ -295,7 +294,7 @@ p
 
 ## Regressão LOESS
 
-```{r}
+```{r results = F}
 op1 <- optim(par = c(0.5), fn = calcSSE, method = "SANN", data = df1, regressor = "rate", time = "Time")
 rl1 <- loess(rate ~ as.numeric(Time), data = df1, span = op1$par)
 ###predict(rl1,seq(as.Date("2017-03-23"), length = 5, by = 'week'))
@@ -319,36 +318,45 @@ df1 %>%
 ## Suavização Exponencial
 ### Sem Amortecimento
 
-```{r}
+```{rresults = F}
+splits <- initial_time_split(df, prop=0.8)
+model <- exp_smoothing() %>%
+    set_engine("ets")
+model_fit <- model %>%
+  fit(log(rate) ~ as.Date(Time), data = training(splits))
+model_fit
+model2 <- exp_smoothing(error = "multiplicative",trend = "additive",season = "multiplicative")  %>%
+    set_engine("ets")
+model_fit2 <- model2 %>%
+  fit(log(rate) ~ as.Date(Time), data = training(splits))
+model_fit2
+model_fit3 <- model %>%
+  fit(rate ~ as.Date(Time), data = training(splits))
+model_fit3
+model3 <- exp_smoothing() %>%
+    set_engine("croston")
+model_fit4 <- model3 %>%
+  fit(log(rate) ~ as.Date(Time), data = training(splits))
+model_fit4
+model_fit5 <- model3 %>%
+  fit(rate ~ as.Date(Time), data = training(splits))
 
-dfst <- df %>% select(rate,X1,Time, numero_episodio) %>% as_tsibble(key=X1)
-training <- dfst %>% filter(numero_episodio <=400)
-test <- dfst %>% filter(numero_episodio >400)
-
-training <- dfst %>%
-  stretch_tsibble(.init=100, .step=1)
-
-treino_fit <- training %>% 
-model(
-    Mean = MEAN(rate),
-    `Naïve` = NAIVE(rate),
-    `Seasonal naïve` = SNAIVE(rate)
-  )
-
-
-treino_fit <- training %>% 
-  model(
-    SES = ETS(rate ~ error("A") + trend("N") + season("N")),
-    Holt = ETS(rate ~ error("A") + trend("A") + season("N")),
-    Damped = ETS(rate ~ error("A") + trend("Ad") + season("N"))) 
-
-treino_fit%>%
-  forecast(h=100) %>%
-  accuracy(dfst)
+models <- modeltime_table(model_fit, model_fit2, model_fit3, model_fit4, model_fit5)
+predict_models <- models %>%
+    modeltime_calibrate(new_data = testing(splits))
+predict_models %>%
+    modeltime_forecast(
+        new_data    = testing(splits),
+        actual_data = df
+    ) %>%
+    plot_modeltime_forecast(
+    )
+predict_models %>%
+    modeltime_accuracy() %>%
+    table_modeltime_accuracy()
 ```
 
 ```{r}
-
 dfts = msts(df %>% select(rate, numero_episodio),seasonal.periods = 365/7, start=c(2007,2.5))
 treino <- df[1:400,]
 treino <- window(dfts[,1], end=c(2014,38))
@@ -358,7 +366,7 @@ h1 <- holt(treino, h = 100)
 h2 <- holt(treino, damped=TRUE, h = 100)
 
 #hw(treino[350:400],seasonal="multiplicative", h = 10) #Não consegui utilizar voltou o erro de frequência
-h1$model$
+#h1$model$
 ```
 
 
