@@ -29,6 +29,10 @@ knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.ali
 # devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
 
 library(tidyverse)
+library(tidymodels)
+library(modeltime)
+library(fable)
+library(tsibble)
 ```
 
 ```{r functions}
@@ -257,7 +261,6 @@ df %>%
 
 ```{r}
 mms <- TTR::SMA(df$rate, n = 21)
-snaive(df$rate, h=50)
 df1 <- cbind(df, mms)
 df1 %>%
   ggplot(aes(x = numero_episodio)) +
@@ -312,5 +315,78 @@ df1 %>%
     )
   )
 ```
+
+## Suavização Exponencial
+### Sem Amortecimento
+
+```{r}
+
+dfst <- df %>% select(rate,X1,Time, numero_episodio) %>% as_tsibble(key=X1)
+training <- dfst %>% filter(numero_episodio <=400)
+test <- dfst %>% filter(numero_episodio >400)
+
+training <- dfst %>%
+  stretch_tsibble(.init=100, .step=1)
+
+treino_fit <- training %>% 
+model(
+    Mean = MEAN(rate),
+    `Naïve` = NAIVE(rate),
+    `Seasonal naïve` = SNAIVE(rate)
+  )
+
+
+treino_fit <- training %>% 
+  model(
+    SES = ETS(rate ~ error("A") + trend("N") + season("N")),
+    Holt = ETS(rate ~ error("A") + trend("A") + season("N")),
+    Damped = ETS(rate ~ error("A") + trend("Ad") + season("N"))) 
+
+treino_fit%>%
+  forecast(h=100) %>%
+  accuracy(dfst)
+```
+
+```{r}
+
+dfts = msts(df %>% select(rate, numero_episodio),seasonal.periods = 365/7, start=c(2007,2.5))
+treino <- df[1:400,]
+treino <- window(dfts[,1], end=c(2014,38))
+teste <- window(dfts[,1], start=c(2014,38))
+
+h1 <- holt(treino, h = 100)
+h2 <- holt(treino, damped=TRUE, h = 100)
+
+#hw(treino[350:400],seasonal="multiplicative", h = 10) #Não consegui utilizar voltou o erro de frequência
+h1$model$
+```
+
+
+```{r}
+forecast_h1 <- data.frame(forecast= c(h1$fitted,h1$mean), n = 1:length(c(h1$fitted,h1$mean)))
+ICbands_h1 <- data.frame(upper=h1$upper[,2], lower=h1$lower[,2], n=(length(h1$fitted)+1):(length(h1$fitted) +length(h1$mean)))
+p <- ggplot()
+p <- p + geom_ribbon(data=ICbands_h1, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
+p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
+p <- p + geom_line(data=forecast_h1,aes(x=n,y = forecast, colour = "Forecast"))
+p <- p + geom_vline(xintercept=max(df1$numero_episodio))
+p
+```
+
+
+### Com Amortecimento
+
+```{r}
+forecast_h2 <- data.frame(forecast= c(h2$fitted,h2$mean), n = 1:length(c(h2$fitted,h2$mean)))
+ICbands_h2 <- data.frame(upper=h2$upper[,2], lower=h2$lower[,2], n=(length(h2$fitted)+1):(length(h2$fitted) +length(h2$mean)))
+p <- ggplot()
+p <- p + geom_ribbon(data=ICbands_h2, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
+p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
+p <- p + geom_line(data=forecast_h2,aes(x=n,y = forecast, colour = "Forecast"))
+p <- p + geom_vline(xintercept=max(df1$numero_episodio))
+p
+```
+
+
 
 # Referências
