@@ -236,8 +236,6 @@ Dickey-Fuller Aumentado, Phillips-Perron, KPSS, com índice de significância de
 
 # Modelagem
 
-
-
 ```{r }
 t <- df %>%
   ggplot(aes(numero_episodio, rate)) +
@@ -279,12 +277,16 @@ df1 %>%
 Utilizando o pacote smooth.
 
 ```{r}
-mms1 <- smooth::sma(df$rate, order=21,silent=FALSE, interval= 'p')
+mms1 <- smooth::sma(df$rate[1:400], order=21,silent=FALSE, interval= 'p', h=100)
 fit_forecast<- data.frame(forecast= c(mms1$fitted,mms1$forecast), n = 1:length(c(mms1$fitted,mms1$forecast)))
+fit_forecast<- fit_forecast %>%
+  mutate(Dados = case_when(
+    n == 1:length(mms1$fitted) ~ "Predição",
+    n == (length(mms1$fitted)+1):length(c(mms1$fitted,mms1$forecast)) ~ "Previsão"))
 ICbands <- data.frame(upper=mms1$upper, lower=mms1$lower, n=(length(mms1$fitted)+1):(length(mms1$fitted) +length(mms1$forecast)))
 p <- ggplot()
-p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
 p <- p + geom_ribbon(data=ICbands, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
+p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
 p <- p + geom_line(data=fit_forecast,aes(x=n,y = forecast, colour = "Forecast"))
 p <- p + geom_vline(xintercept=max(df1$numero_episodio))
 p
@@ -373,6 +375,10 @@ h2 <- holt(treino, damped=TRUE, h = 100)
 ```{r}
 forecast_h1 <- data.frame(forecast= c(h1$fitted,h1$mean), n = 1:length(c(h1$fitted,h1$mean)))
 ICbands_h1 <- data.frame(upper=h1$upper[,2], lower=h1$lower[,2], n=(length(h1$fitted)+1):(length(h1$fitted) +length(h1$mean)))
+forecast_h1<- forecast_h1 %>%
+  mutate(Dados = case_when(
+    n == 1:length(h1$fitted) ~ "Predição",
+    n == (length(h1$fitted)+1):length(c(h1$fitted,h1$mean)) ~ "Previsão"))
 p <- ggplot()
 p <- p + geom_ribbon(data=ICbands_h1, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
 p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
@@ -387,6 +393,10 @@ p
 ```{r}
 forecast_h2 <- data.frame(forecast= c(h2$fitted,h2$mean), n = 1:length(c(h2$fitted,h2$mean)))
 ICbands_h2 <- data.frame(upper=h2$upper[,2], lower=h2$lower[,2], n=(length(h2$fitted)+1):(length(h2$fitted) +length(h2$mean)))
+forecast_h2<- forecast_h2 %>%
+  mutate(Dados = case_when(
+    n == 1:length(h2$fitted) ~ "Predição",
+    n == (length(h2$fitted)+1):length(c(h2$fitted,h2$mean)) ~ "Previsão"))
 p <- ggplot()
 p <- p + geom_ribbon(data=ICbands_h2, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
 p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
@@ -395,6 +405,32 @@ p <- p + geom_vline(xintercept=max(df1$numero_episodio))
 p
 ```
 
+## Calculando Métricas de Acurácia dos Modelos não-ModelTime
+
+```{r}
+mae = mape = mase = smape = rmse = is.vector(NULL)
+  true_values1 = df %>% filter(numero_episodio > max(numero_episodio) - nrow(fit_forecast %>% filter(Dados == "Previsão"))) %>% select(rate)
+true_values2 = df %>% filter(numero_episodio > max(numero_episodio - nrow(forecast_h2 %>% filter(Dados == "Previsão")))) %>% select(rate)
+v1 = fit_forecast %>% filter(Dados == "Previsão") %>% select(forecast)
+v2 = forecast_h1 %>% filter(Dados == "Previsão") %>% select(forecast)
+v3 = forecast_h2 %>% filter(Dados == "Previsão") %>% select(forecast)
+mae[1] = DescTools::MAE(v1$forecast,true_values1$rate)
+mae[2] = DescTools::MAE(v2$forecast,true_values2$rate)
+mae[3] = DescTools::MAE(v3$forecast,true_values2$rate)
+mape[1] = DescTools::MAPE(v1$forecast,true_values1$rate)
+mape[2] = DescTools::MAPE(v2$forecast,true_values2$rate)
+mape[3] = DescTools::MAPE(v3$forecast,true_values2$rate)
+smape[1] = DescTools::SMAPE(v1$forecast,true_values1$rate)
+smape[2] = DescTools::SMAPE(v2$forecast,true_values2$rate)
+smape[3] = DescTools::SMAPE(v3$forecast,true_values2$rate)
+rmse[1] = DescTools::RMSE(v1$forecast,true_values1$rate)
+rmse[2] = DescTools::RMSE(v2$forecast,true_values2$rate)
+rmse[3] = DescTools::RMSE(v3$forecast,true_values2$rate)
+```
+```{r}
+cbind(c("SMA", "Holt", "Holt amortecido"),mae,mape,smape, rmse) %>%
+    mypdf1::pdf1_tbl("Métricas nos dados de teste")
+```
 
 
 # Referências
