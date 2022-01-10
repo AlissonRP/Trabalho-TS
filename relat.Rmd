@@ -498,10 +498,81 @@ ggplot() +
   geom_vline(xintercept=max(df1$numero_episodio))
 ```
 
+## Outros modelos do pacote ModelTime
+```{r}
+model7 <- prophet_reg() %>% set_engine("prophet")
+model8 <-  prophet_boost(
+    learn_rate = 0.1
+) %>%
+    set_engine("prophet_xgboost")
+model9 <- arima_reg() %>%
+    set_engine("auto_arima")
+model10 <-  model_spec <- arima_boost(
+    tree_depth = 6,
+    learn_rate = 0.1
+) %>%
+    set_engine(engine = "arima_xgboost")
+model11 <-  nnetar_reg() %>%
+    set_engine("nnetar")
+fit13 <- model7 %>% fit(f1, data = df_train)
+fit14 <- model7 %>% fit(f2, data = df_train)
+fit15 <- model8 %>% fit(f1, data = df_train)
+fit16 <- model8 %>% fit(f2, data = df_train)
+fit17 <- model9 %>% fit(f1, data = df_train)
+fit18 <- model9 %>% fit(f2, data = df_train)
+fit19 <- model10 %>% fit(f1, data = df_train)
+fit20 <- model10 %>% fit(f2, data = df_train)
+fit21 <- model11 %>% fit(f1, data = df_train)
+fit22 <- model11 %>% fit(f2, data = df_train)
+models3 <- modeltime_table(fit13,fit15,fit17,fit19, fit21)
+models4 <- modeltime_table(fit14,fit16,fit18,fit20, fit22)
+predict_models1 <- models3 %>%
+    modeltime_calibrate(new_data = df_test)
+predict_models2 <- models4 %>%
+    modeltime_calibrate(new_data = df_test)
+predict_models1 %>%
+    modeltime_forecast(
+        new_data    = df_test,
+        actual_data = df
+    ) %>%
+    plot_modeltime_forecast(
+    )
+predict_models2 %>%
+    modeltime_forecast(
+        new_data    = df_test,
+        actual_data = df
+    ) %>%
+    plot_modeltime_forecast(
+    )
+predict_models1 %>%
+    modeltime_accuracy() %>%
+    table_modeltime_accuracy()
+t3<- predict_models2 %>%
+    modeltime_accuracy() %>%
+    table_modeltime_accuracy()
+metrics <- data.frame(NULL)
+
+for(i in 1:5){
+  if(i == 1){
+    metrics <- my_metrics(df,predict_models1[[5]][[i]]$.actual ,predict_models1[[5]][[i]]$.prediction)
+  } else{
+  metrics <- cbind(metrics, my_metrics(df,predict_models1[[5]][[i]]$.actual ,predict_models1[[5]][[i]]$.prediction))
+  }
+}
+names(metrics) <- c(".metric1", ".estimator1", ".estimate1",".metric2",".estimator2",".estimate2",".metric3",    ".estimator3", ".estimate3", ".metric4", ".estimator4", ".estimate4", ".metric5",".estimator5", ".estimate5")
+metrics <-  metrics %>%
+  select(-c(2,4:5,7:8,10:11,13:14))
+names(metrics) <- c("Métricas", "Prophet", "Prophet Boost", "Auto Arima", "Auto Arima Boost", "NNetar")
+Metricas <- unlist(metrics %>% select(Métricas))
+metrics <- metrics %>% select(-Métricas) %>% t() %>% as.data.frame()
+names(metrics) <- str_to_upper(Metricas)
+```
+
+
+
 ## Calculando Métricas de Acurácia dos Modelos não-ModelTime
 
 ```{r}
-mae = mape = mase = smape = rmse = is.vector(NULL)
 true_values1 = df %>% filter(numero_episodio > max(numero_episodio) - nrow(fit_forecast %>% filter(Dados == "Previsão"))) %>% select(rate)
 true_values2 = df %>% filter(numero_episodio > max(numero_episodio - nrow(forecast_h2 %>% filter(Dados == "Previsão")))) %>% select(rate)
 v1 = fit_forecast %>% filter(Dados == "Previsão") %>% select(forecast)
