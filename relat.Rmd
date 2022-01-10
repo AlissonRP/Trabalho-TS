@@ -78,6 +78,8 @@ calcSSE <- function(data, regressor, time, x) {
   return(sse)
 }
 
+my_metrics <- default_forecast_accuracy_metric_set()
+
 scale_fill_discrete <- \(...) scale_fill_alisson(...)
 ```
 
@@ -256,9 +258,13 @@ df %>%
 
 ## Médias Móveis Simples
 
-```{r}
+```{r,results = F}
 mms <- TTR::SMA(df$rate, n = 21)
 df1 <- cbind(df, mms)
+```
+
+
+```{r}
 df1 %>%
   ggplot(aes(x = numero_episodio)) +
   geom_line(aes(y = rate, colour = "SerieNormal")) +
@@ -273,10 +279,10 @@ df1 %>%
   )
 ```
 
-## Média Móvel Simples com Previsão
+### Previsão
 Utilizando o pacote smooth.
 
-```{r}
+```{r, results = F, fig.show='hide'}
 mms1 <- smooth::sma(df$rate[1:400], order=21,silent=FALSE, interval= 'p', h=100)
 fit_forecast<- data.frame(forecast= c(mms1$fitted,mms1$forecast), n = 1:length(c(mms1$fitted,mms1$forecast)))
 fit_forecast<- fit_forecast %>%
@@ -284,6 +290,10 @@ fit_forecast<- fit_forecast %>%
     n == 1:length(mms1$fitted) ~ "Predição",
     n == (length(mms1$fitted)+1):length(c(mms1$fitted,mms1$forecast)) ~ "Previsão"))
 ICbands <- data.frame(upper=mms1$upper, lower=mms1$lower, n=(length(mms1$fitted)+1):(length(mms1$fitted) +length(mms1$forecast)))
+```
+
+
+```{r}
 ggplot()+
    geom_ribbon(data=ICbands, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')+
    geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal"))+
@@ -295,12 +305,16 @@ ggplot()+
 
 ## Regressão LOESS
 
-```{r results = F}
+```{r, results = F}
 op1 <- optim(par = c(0.5), fn = calcSSE, method = "SANN", data = df1, regressor = "rate", time = "Time")
 rl1 <- loess(rate ~ as.numeric(Time), data = df1, span = op1$par)
 ###predict(rl1,seq(as.Date("2017-03-23"), length = 5, by = 'week'))
 prl <- predict(rl1, as.numeric(df1$Time), se = T)
 df1 <- cbind(df, prl$fit)
+```
+
+
+```{r}
 df1 %>%
   ggplot(aes(x = numero_episodio)) +
   geom_line(aes(y = rate, colour = "SerieNormal")) +
@@ -317,45 +331,127 @@ df1 %>%
 ```
 
 ## Suavização Exponencial
-### Sem Amortecimento
-
-```{rresults = F}
+### Com pacote ModelTime
+Estamos usando a avaliação de animes como variável dependente de duas formas, na forma normal e no log da avaliação. Usaremos também 6 modelos: ETS (M, M, M), ETS(M,A,M), Croston, Theta, Smooth_es(A,A,A) e Smooth_es(A,A,M).
+```{r, results = F}
 splits <- initial_time_split(df, prop=0.8)
-model <- exp_smoothing() %>%
+df_train=training(splits)
+df_test=testing(splits)
+#df_vf=vfold_cv(df_train,10)
+#df_rec1=df_train |> mutate(rate=log(rate),Time=as.Date(Time)) |> recipe(rate ~ Time)
+#df_rec2=df_train |> mutate(Time=as.Date(Time)) |> recipe(rate ~ Time)
+
+f1 <- rate ~ as.Date(Time)
+f2 <- log(rate) ~ as.Date(Time)
+
+model1 <- exp_smoothing(error = "multiplicative",trend = "multiplicative",season = "multiplicative") %>%
     set_engine("ets")
-model_fit <- model %>%
-  fit(log(rate) ~ as.Date(Time), data = training(splits))
-model_fit
 model2 <- exp_smoothing(error = "multiplicative",trend = "additive",season = "multiplicative")  %>%
     set_engine("ets")
-model_fit2 <- model2 %>%
-  fit(log(rate) ~ as.Date(Time), data = training(splits))
-model_fit2
-model_fit3 <- model %>%
-  fit(rate ~ as.Date(Time), data = training(splits))
-model_fit3
 model3 <- exp_smoothing() %>%
     set_engine("croston")
-model_fit4 <- model3 %>%
-  fit(log(rate) ~ as.Date(Time), data = training(splits))
-model_fit4
-model_fit5 <- model3 %>%
-  fit(rate ~ as.Date(Time), data = training(splits))
+model4 <-  exp_smoothing() %>%
+    set_engine("theta")
+model5 <-exp_smoothing(
+  error = "additive",
+  trend = "additive",
+  season = "multiplicative"
+) %>%
+    set_engine("smooth_es")
+model6 <- exp_smoothing(
+  error = "additive",
+  trend = "additive",
+  season = "additive"
+) %>%
+  set_engine("smooth_es")
 
-models <- modeltime_table(model_fit, model_fit2, model_fit3, model_fit4, model_fit5)
-predict_models <- models %>%
-    modeltime_calibrate(new_data = testing(splits))
-predict_models %>%
+fit1 <- model1 %>% fit(f1, data = df_train)
+fit2 <- model1 %>% fit(f2, data = df_train)
+fit3 <- model2 %>% fit(f1, data = df_train)
+fit4 <- model2 %>% fit(f2, data = df_train)
+fit5 <- model3 %>% fit(f1, data = df_train)
+fit6 <- model3 %>% fit(f2, data = df_train)
+fit7 <- model4 %>% fit(f1, data = df_train)
+fit8 <- model4 %>% fit(f2, data = df_train)
+fit9 <- model5 %>% fit(f1, data = df_train)
+fit10 <- model5 %>% fit(f2, data = df_train)
+fit11 <- model5 %>% fit(f1, data = df_train)
+fit12 <- model5 %>% fit(f2, data = df_train)
+
+
+#model_work <- workflow_set(list(log=df_rec1,log=df_rec1,log=df_rec1,rate=df_rec2, rate=df_rec2,rate=df_rec2),
+                           #list(mod1=model1,mod2=model2, mod3 =model3,mod1=model1,mod2=model2, mod3 =model3))
+#model_work %>% fit()
+
+#ft1=model_work %>% 
+#  fit_resamples(df_vf,metrics=metric_set(accuracy,roc_auc,sensitivity,specificity),
+#                control = control_resamples(save_pred = TRUE)) %>% 
+#  collect_predictions()
+models1 <- modeltime_table(fit1,fit3,fit5,fit7,fit9, fit11)
+models2 <- modeltime_table(fit2,fit4,fit6,fit8,fit10, fit12)
+
+predict_models1 <- models1 %>%
+    modeltime_calibrate(new_data = df_test)
+predict_models2 <- models2 %>%
+    modeltime_calibrate(new_data = df_test)
+```
+
+#### Gráficos
+```{r}
+p <- predict_models1 %>%
     modeltime_forecast(
-        new_data    = testing(splits),
+        new_data    = df_test,
         actual_data = df
     ) %>%
     plot_modeltime_forecast(
     )
-predict_models %>%
+```
+```{r}
+p
+```
+
+
+```{r}
+p1  <- predict_models2 %>%
+    modeltime_forecast(
+        new_data    = df_test,
+        actual_data = df
+    ) %>%
+    plot_modeltime_forecast(
+    )
+```
+
+```{r}
+p1
+```
+
+
+#### Tabelas das Métricas
+
+```{r}
+t1 <- predict_models1 %>%
     modeltime_accuracy() %>%
     table_modeltime_accuracy()
 ```
+
+
+```{r}
+t1
+```
+
+
+```{r}
+t2 <- predict_models2 %>%
+    modeltime_accuracy() %>%
+  table_modeltime_accuracy()
+```
+
+
+```{r}
+t2
+```
+
+### Com outros pacotes
 
 ```{r}
 dfts = msts(df %>% select(rate, numero_episodio),seasonal.periods = 365/7, start=c(2007,2.5))
@@ -369,7 +465,7 @@ h2 <- holt(treino, damped=TRUE, h = 100)
 #hw(treino[350:400],seasonal="multiplicative", h = 10) #Não consegui utilizar voltou o erro de frequência
 #h1$model$
 ```
-
+#### Holt não Amortecido
 
 ```{r}
 forecast_h1 <- data.frame(forecast= c(h1$fitted,h1$mean), n = 1:length(c(h1$fitted,h1$mean)))
@@ -378,16 +474,15 @@ forecast_h1<- forecast_h1 %>%
   mutate(Dados = case_when(
     n == 1:length(h1$fitted) ~ "Predição",
     n == (length(h1$fitted)+1):length(c(h1$fitted,h1$mean)) ~ "Previsão"))
-p <- ggplot()
-p <- p + geom_ribbon(data=ICbands_h1, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
-p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
-p <- p + geom_line(data=forecast_h1,aes(x=n,y = forecast, colour = "Forecast"))
-p <- p + geom_vline(xintercept=max(df1$numero_episodio))
-p
+ggplot() + 
+  geom_ribbon(data=ICbands_h1, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70') + 
+  geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) + 
+  geom_line(data=forecast_h1,aes(x=n,y = forecast, colour = "Forecast")) +
+  geom_vline(xintercept=max(df1$numero_episodio))
 ```
 
 
-### Com Amortecimento
+#### Holt com Amortecimento
 
 ```{r}
 forecast_h2 <- data.frame(forecast= c(h2$fitted,h2$mean), n = 1:length(c(h2$fitted,h2$mean)))
@@ -396,38 +491,39 @@ forecast_h2<- forecast_h2 %>%
   mutate(Dados = case_when(
     n == 1:length(h2$fitted) ~ "Predição",
     n == (length(h2$fitted)+1):length(c(h2$fitted,h2$mean)) ~ "Previsão"))
-p <- ggplot()
-p <- p + geom_ribbon(data=ICbands_h2, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
-p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
-p <- p + geom_line(data=forecast_h2,aes(x=n,y = forecast, colour = "Forecast"))
-p <- p + geom_vline(xintercept=max(df1$numero_episodio))
-p
+ggplot() + 
+  geom_ribbon(data=ICbands_h2, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70') + 
+  geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) + 
+  geom_line(data=forecast_h2,aes(x=n,y = forecast, colour = "Forecast")) +
+  geom_vline(xintercept=max(df1$numero_episodio))
 ```
 
 ## Calculando Métricas de Acurácia dos Modelos não-ModelTime
 
 ```{r}
 mae = mape = mase = smape = rmse = is.vector(NULL)
-  true_values1 = df %>% filter(numero_episodio > max(numero_episodio) - nrow(fit_forecast %>% filter(Dados == "Previsão"))) %>% select(rate)
+true_values1 = df %>% filter(numero_episodio > max(numero_episodio) - nrow(fit_forecast %>% filter(Dados == "Previsão"))) %>% select(rate)
 true_values2 = df %>% filter(numero_episodio > max(numero_episodio - nrow(forecast_h2 %>% filter(Dados == "Previsão")))) %>% select(rate)
 v1 = fit_forecast %>% filter(Dados == "Previsão") %>% select(forecast)
 v2 = forecast_h1 %>% filter(Dados == "Previsão") %>% select(forecast)
 v3 = forecast_h2 %>% filter(Dados == "Previsão") %>% select(forecast)
-mae[1] = DescTools::MAE(v1$forecast,true_values1$rate)
-mae[2] = DescTools::MAE(v2$forecast,true_values2$rate)
-mae[3] = DescTools::MAE(v3$forecast,true_values2$rate)
-mape[1] = DescTools::MAPE(v1$forecast,true_values1$rate)
-mape[2] = DescTools::MAPE(v2$forecast,true_values2$rate)
-mape[3] = DescTools::MAPE(v3$forecast,true_values2$rate)
-smape[1] = DescTools::SMAPE(v1$forecast,true_values1$rate)
-smape[2] = DescTools::SMAPE(v2$forecast,true_values2$rate)
-smape[3] = DescTools::SMAPE(v3$forecast,true_values2$rate)
-rmse[1] = DescTools::RMSE(v1$forecast,true_values1$rate)
-rmse[2] = DescTools::RMSE(v2$forecast,true_values2$rate)
-rmse[3] = DescTools::RMSE(v3$forecast,true_values2$rate)
+dmetrics <- cbind(v1,v2,v3,true_values1,true_values2)
+names(dmetrics) <- c("v1","v2","v3","true_values1","true_values2")
+m1 <- my_metrics(dmetrics, true_values1, v1)
+m2 <- my_metrics(dmetrics, true_values2, v2)
+m3 <- my_metrics(dmetrics, true_values2, v3)
+inner_join(m1,m2, by = '.metric') %>%
+inner_join(m3, by = '.metric') -> M1
+M1 <- M1 %>% select(-c(.estimator.x, .estimator.y, .estimator)) 
+names(M1) <- c("Métricas", "SMA", "Holt", "Holt amortecido")
+Metricas <- unlist(M1 %>% select(Métricas))
+M1 <- M1 %>% select(-Métricas) %>% t() %>% as.data.frame()
+names(M1) <- str_to_upper(Metricas)
+
 ```
+
 ```{r}
-cbind(c("SMA", "Holt", "Holt amortecido"),mae,mape,smape, rmse) %>%
+M1 %>%
     mypdf1::pdf1_tbl("Métricas nos dados de teste")
 ```
 
