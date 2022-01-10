@@ -284,12 +284,11 @@ fit_forecast<- fit_forecast %>%
     n == 1:length(mms1$fitted) ~ "Predição",
     n == (length(mms1$fitted)+1):length(c(mms1$fitted,mms1$forecast)) ~ "Previsão"))
 ICbands <- data.frame(upper=mms1$upper, lower=mms1$lower, n=(length(mms1$fitted)+1):(length(mms1$fitted) +length(mms1$forecast)))
-p <- ggplot()
-p <- p + geom_ribbon(data=ICbands, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')
-p <- p + geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal")) 
-p <- p + geom_line(data=fit_forecast,aes(x=n,y = forecast, colour = "Forecast"))
-p <- p + geom_vline(xintercept=max(df1$numero_episodio))
-p
+ggplot()+
+   geom_ribbon(data=ICbands, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')+
+   geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal"))+
+   geom_line(data=fit_forecast,aes(x=n,y = forecast, colour = "Forecast"))+
+   geom_vline(xintercept=max(df1$numero_episodio))
 
 ```
 
