@@ -31,8 +31,8 @@ library(tidyverse)
 library(tidymodels)
 library(modeltime)
 library(forecast)
-library(workflowsets)
-library(sknifedatar)
+#library(workflowsets)
+#library(sknifedatar)
 ```
 
 ```{r functions}
@@ -338,55 +338,13 @@ Estamos usando a avaliação de animes como variável dependente de duas formas,
 splits <- initial_time_split(df, prop=0.8)
 df_train=training(splits)
 df_test=testing(splits)
-initial_time_split(df, prop = 0.8) %>%
-  timetk::tk_time_series_cv_plan() %>%
-  timetk::plot_time_series_cv_plan(as.Date(Time), rate, .interactive = FALSE,
-                           .title = "Avaliação de Naruto Shippuden dados de Treino / Teste") +
-  theme(strip.text = element_blank())
+
+
+
 ```
-
-
-```{r}
-df <- df %>% mutate(Rate = log(rate))
-
-recipe_base <- recipe(rate~Time, data=df)
-
-recipe_date_features <- recipe_base %>% 
-  step_date(date, features = c('month','year'))
-
-recipe_date_extrafeatures <- recipe_date_features %>% 
-  step_date(date, features = c('quarter','semester'))
-       
-recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>% 
-  step_lag(value, lag = 1:6) %>% 
-  timetk::step_ts_impute(all_numeric(), period=365)
-  
-recipe_date_extrafeatures_fourier <-recipe_date_extrafeatures  %>% 
-  timetk::step_fourier(date, period = 365/12, K = 1)
-
-recipe_base1 <- recipe(Rate~Time, data=df)
-
-recipe_date_features1 <- recipe_base %>% 
-  step_date(date, features = c('month','year'))
-
-recipe_date_extrafeatures1 <- recipe_date_features %>% 
-  step_date(date, features = c('quarter','semester'))
-       
-recipe_date_extrafeatures_lag1 <- recipe_date_extrafeatures %>% 
-  step_lag(value, lag = 1:6) %>% 
-  timetk::step_ts_impute(all_numeric(), period=365)
-  
-recipe_date_extrafeatures_fourier1 <-recipe_date_extrafeatures  %>% 
-  timetk::step_fourier(date, period = 365/12, K = 1)
-```
-
 
 
 ```{r, results = F}
-
-#df_vf=vfold_cv(df_train,10)
-#df_rec1=df_train |> mutate(rate=log(rate),Time=as.Date(Time)) |> recipe(rate ~ Time)
-#df_rec2=df_train |> mutate(Time=as.Date(Time)) |> recipe(rate ~ Time)
 
 f1 <- rate ~ as.Date(Time)
 f2 <- log(rate) ~ as.Date(Time)
