@@ -23,7 +23,6 @@ library(tidyverse)
 library(tidymodels)
 library(modeltime)
 library(forecast)
-library(workflowsets)
 library(sknifedatar)
 ```
 
