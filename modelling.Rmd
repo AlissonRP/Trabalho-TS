@@ -27,7 +27,7 @@ library(sknifedatar)
 ```
 
 ```{r}
-df <- read_csv("naruto.csv")=
+df <- read_csv("naruto.csv")
 ```
 
 ```{r}
