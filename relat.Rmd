@@ -257,7 +257,7 @@ df %>%
 ## Médias Móveis Simples
 
 ```{r}
-mms <- TTR::SMA(df$rate, n = 21)
+mms <- TTR::SMA(df$rate, n = 10)
 df1 <- cbind(df, mms)
 df1 %>%
   ggplot(aes(x = numero_episodio)) +
@@ -293,6 +293,13 @@ p
 
 ```
 
+```{r}
+ggplot()+
+   geom_ribbon(data=ICbands, aes(x=n,ymin=lower, ymax=upper), fill = 'grey70')+
+   geom_line(data = df1, aes(x= numero_episodio,y = rate, colour = "SerieNormal"))+
+   geom_line(data=fit_forecast,aes(x=n,y = forecast, colour = "Forecast"))+
+   geom_vline(xintercept=max(df1$numero_episodio))
+```
 
 ## Regressão LOESS
 
