@@ -144,12 +144,17 @@ Uma abordagem importante também é decompor a série temporal, apriori supõe-s
 decompose <- forecast::mstl(df$rate)
 decompose |> autoplot()
 ```
+A questão de curiosidade vamos ver se os resíduos seguem uma distribuição normal, para isso utilizamos o teste de Shapiro Wilk que possui como hipótese:
+$$
+H_0:\text{Os dados seguem uma distribuição Normal}
+$$
 ```{r}
 # normal K
-data.frame(decompose)$Remainder |>
-  shapiro.test()
+norm=data.frame(decompose)$Remainder |>
+  shapiro.test() |> 
+  (\(x) x$p.value)()
 ```
-
+Efetuando o teste obtemos um p-valor de `r norm`, assim portando rejeitando a hipótese $H_0$, porém os resíduos não possuirem distribuição normal não afetará as analises daqui pra frente.
 
 
 # Testes
@@ -157,9 +162,9 @@ Os gráficos de seção anterior evidenciaram a possibilidade da série não ser
 
 ### Tendência 
 
-Tendência refere-se a um algum  comportamento   não - estocástico da série em algum momento do tempo, se tal comportamento só acontece em alguns momentos especifícos do tempo, chamamos de tendência estocástica, do contrário é dita determistica. Vamos começar pelos testes de tendência deterministica, que em termos sumarizados possuem como hipótese:
+Tendência refere-se a um algum  comportamento   não - estocástico da série em algum momento do tempo, se tal comportamento só acontece em alguns momentos especifícos do tempo, chamamos de tendência estocástica, do contrário é dita determinística. Vamos começar pelos testes de tendência determinística, que em termos sumarizados possuem como hipótese:
 $$
-H_0:\text{A série possui tendência determistica}
+H_0:\text{A série não possui tendência determinística}
 $$
 ```{r}
 kendal <- trend::mk.test(df$rate)
@@ -168,23 +173,23 @@ stuart <- trend::cs.test(df$rate)
 tab1 <- as.data.frame(c("Cox-Stuart", "Wald-Wolfowitz", "Mann-Kendall"))
 tab1[, 2] <- c(stuart$p.value, wald$p.value, kendal$p.value)
 names(tab1) <- c("Testes", "P-valor")
-tab1$`P-valor` <- round(tab1$`P-valor`, 4)
-tab1$`P-valor` <- ifelse(tab1$`P-valor` < 0.05, ifelse(tab1$`P-valor` < 0.0001, "<0,0001*", paste0(as.character(tab1$`P-valor`), "*")), tab1$`P-valor`)
+
+#Sim eu removi os `**` grrr
 ```
 
 ```{r}
 tab1 %>%
-  mypdf1::pdf1_tbl("Testes de Tendência Deterministica")
+  mypdf1::pdf1_tbl("Testes de Tendência Determinística")
 ```
 
 Conforme mostrado pela Tabela anterior podemos ver que pelos testes de 
-Cox-Stuart, Wald-Wolfowitz, Mann-Kendall, com índice de significância de 5%, temos que todos os p-valores são menores que 0.05, então concluímos que existe tendência determinística na série temporal. 
+Cox-Stuart, Wald-Wolfowitz, Mann-Kendall, temos que todos os p-valores são menores pequenos, então concluímos que existe tendência determinística na série temporal. 
 
 
 ### Sazonalidade
 Sazonalidade acontece quando a série possui um comportamento que se repete frequencialmente, vamos nessa subseção testar se existe sazonalidade nas avaliação dos episódios, assim temos como hipótese:
 $$
-H_0:\text{A série possui sazonalidaade}
+H_0:\text{A série não possui sazonalidade}
 $$
 Os testes aplicados  foram 
 Kruskal-Wallis, Friedman e Autocorrelação em lags Sazonais, assim gerando a seguite tabela:
@@ -205,7 +210,7 @@ tab2 %>%
   mypdf1::pdf1_tbl("Testes de Sazonalidade")
 ```
 
-Assim podemos ver que pelos testes aplicados com índice de significância de 5%,  concluímos que não existe sazonalidade. 
+Assim como os testes obtiveram p-valor$>$0.5, concluímos portanto que não existem indícios de sazonalidade. 
 
 ### Testes de Raiz unitária
 Para começar tal seção, primeiros vamos definir um passeio aleatório em sua forma simplificada:
@@ -258,13 +263,12 @@ df %>%
 
 ## Médias Móveis Simples
 
-<<<<<<< HEAD
+
 ```{r}
 mms <- TTR::SMA(df$rate, n = 10)
-=======
-```{r,results = F}
+
 mms <- TTR::SMA(df$rate, n = 21)
->>>>>>> 0c182276d0e17ccaedef076ebb9ad4cdd66d4ea0
+
 df1 <- cbind(df, mms)
 ```
 
@@ -344,7 +348,7 @@ df1 %>%
 
 ## Suavização Exponencial
 ### Com pacote ModelTime
-Estamos usando a avaliação de animes como variável dependente de duas formas, na forma normal e no log da avaliação. Usaremos também 6 modelos: ETS (M, M, M), ETS(M,A,M), Croston, Theta, Smooth_es(A,A,A) e Smooth_es(A,A,M).
+Estamos usando a avaliação dos episódios do animes como variável dependente de duas formas: Na forma original e aplicando logaritmo. Usaremos também 6 modelos: ETS (M, M, M), ETS(M,A,M), Croston, Theta, Smooth_es(A,A,A) e Smooth_es(A,A,M).
 
 ```{r}
 splits <- initial_time_split(df, prop=0.8)
@@ -356,7 +360,7 @@ df_test=testing(splits)
 ```
 
 
-```{r, results = F}
+```{r, results = F,eval = FALSE}
 
 f1 <- rate ~ as.Date(Time)
 f2 <- log(rate) ~ as.Date(Time)
@@ -414,7 +418,7 @@ predict_models2 <- models2 %>%
 ```
 
 #### Gráficos
-```{r}
+```{r,eval = FALSE}
 p <- predict_models1 %>%
     modeltime_forecast(
         new_data    = df_test,
@@ -428,7 +432,7 @@ p
 ```
 
 
-```{r}
+```{r,eval = FALSE}
 p1  <- predict_models2 %>%
     modeltime_forecast(
         new_data    = df_test,
@@ -438,14 +442,14 @@ p1  <- predict_models2 %>%
     )
 ```
 
-```{r}
+```{r,eval = FALSE}
 p1
 ```
 
 
 #### Tabelas das Métricas
 
-```{r}
+```{r,eval = FALSE}
 t1 <- predict_models1 %>%
     modeltime_accuracy() %>%
     table_modeltime_accuracy()
