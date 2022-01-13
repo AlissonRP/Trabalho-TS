@@ -512,7 +512,7 @@ model8 <-  prophet_boost(
     set_engine("prophet_xgboost")
 model9 <- arima_reg() %>%
     set_engine("auto_arima")
-model10 <-  model_spec <- arima_boost(
+model10 <- arima_boost(
     tree_depth = 6,
     learn_rate = 0.1
 ) %>%

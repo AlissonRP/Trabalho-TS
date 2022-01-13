@@ -42,37 +42,20 @@ initial_time_split(df, prop = 0.8) %>%
 ```
 
 ```{r}
-df <- df %>% mutate(Rate = log(rate))
-
 recipe_base <- recipe(rate~Time, data=df)
 
 recipe_date_features <- recipe_base %>% 
-  step_date(date, features = c('month','year'))
+  step_date(Time, features = c('month','year'))
 
 recipe_date_extrafeatures <- recipe_date_features %>% 
-  step_date(date, features = c('quarter','semester'))
+  step_date(Time, features = c('quarter','semester'))
        
 recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>% 
-  step_lag(value, lag = 1:6) %>% 
+  step_lag(rate, lag = 1:6) %>% 
   timetk::step_ts_impute(all_numeric(), period=365)
   
 recipe_date_extrafeatures_fourier <-recipe_date_extrafeatures  %>% 
-  timetk::step_fourier(date, period = 365/12, K = 1)
-
-recipe_base1 <- recipe(Rate~Time, data=df)
-
-recipe_date_features1 <- recipe_base %>% 
-  step_date(date, features = c('month','year'))
-
-recipe_date_extrafeatures1 <- recipe_date_features %>% 
-  step_date(date, features = c('quarter','semester'))
-       
-recipe_date_extrafeatures_lag1 <- recipe_date_extrafeatures %>% 
-  step_lag(value, lag = 1:6) %>% 
-  timetk::step_ts_impute(all_numeric(), period=365)
-  
-recipe_date_extrafeatures_fourier1 <-recipe_date_extrafeatures  %>% 
-  timetk::step_fourier(date, period = 365/12, K = 1)
+  timetk::step_fourier(Time, period = 365/12, K = 1)
 ```
 
 ```{r}
@@ -82,20 +65,64 @@ prophet_boost <- prophet_boost(mode = 'regression') %>%
 prophet_boost_log <- prophet_boost(
     mode = 'regression',
     changepoint_range = 0.8,
-    logistic_floor = min(data$value),
-    logistic_cap = max(data$value),
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
     growth = 'logistic'
   ) %>%
   set_engine("prophet_xgboost")
 
-mars <- mars( mode = 'regression') %>% 
-  set_engine('earth')
-
-nnetar <- nnetar_reg() %>% 
-  set_engine("nnetar")
+mars <- mars(mode = 'regression') %>% 
+  set_engine('earth') #precisa do pacote "earth"
 
 auto_arima_boost <- arima_boost() %>% 
   set_engine('arima_xgboost')
+
+arima_boost <- arima_boost(
+    tree_depth = 6,
+    learn_rate = 0.1
+) %>%
+    set_engine(engine = "arima_xgboost")
+ets <- exp_smoothing() %>%
+  set_engine('ets')
+etsMMM <- exp_smoothing(error = "multiplicative",trend = "multiplicative",season = "multiplicative") %>%
+    set_engine("ets")
+etsMAM <- exp_smoothing(error = "multiplicative",trend = "additive",season = "multiplicative")  %>%
+    set_engine("ets")
+croston <- exp_smoothing() %>%
+    set_engine("croston")
+theta <-  exp_smoothing() %>%
+    set_engine("theta")
+smooth_es_AAM <-exp_smoothing(
+  error = "additive",
+  trend = "additive",
+  season = "multiplicative"
+) %>%
+    set_engine("smooth_es")
+smooth_es_AAA <- exp_smoothing(
+  error = "additive",
+  trend = "additive",
+  season = "additive"
+) %>%
+  set_engine("smooth_es")
+smooth_es_MAM <- exp_smoothing(
+  error = "multiplicative",
+  trend = "additive",
+  season = "multiplicative"
+) %>%
+  set_engine("smooth_es")
+etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
+    set_engine("ets")
+ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
+    set_engine("ets")
+#etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative")  %>%
+#    set_engine("ets")
+#model6 <- exp_smoothing(
+#  error = "additive",
+#  trend = "additive",
+#  season = "multiplicative"
+#) %>%
+#  set_engine("ets")
+#model6 %>% fit(rate ~ Time, data = df_train)
 ```
 
 ```{r}
@@ -108,21 +135,45 @@ model_work <- workflow_set(
     extrafeatures_fourier = recipe_date_extrafeatures_fourier
   ),
   models  = list(
-    M_arima_boost       = auto_arima_boost,
+    M_auto_arima_boost       = auto_arima_boost,
     M_prophet_boost_log = prophet_boost_log, 
     M_prophet_boost     = prophet_boost,
     M_mars              = mars,
-    M_nnetar            = nnetar
+    M_arima_boost       = arima_boost,
+    M_ets               = ets,
+    M_etsMMM            = etsMMM, 
+    M_etsMAM            = etsMAM,
+    M_croston           = croston,
+    M_theta             = theta,
+    M_smoothAAM         = smooth_es_AAM, 
+    M_smoothAAA         = smooth_es_AAA,
+    M_smoothMAM         = smooth_es_MAM,
+    M_etsAAA            = etsAAA, 
+    M_etsauto           = ets_auto 
+    #M_etsAAM            = etsAAM
   ),
   cross   = TRUE
 )
 model_work <- model_work %>% anti_join(
-    tibble(wflow_id = c("extrafeatures_lag_M_nnetar", 
-                        "extrafeatures_lag_M_mars")), 
+    tibble(wflow_id = c("extrafeatures_lag_M_mars")), 
             by = "wflow_id")
 model_fit <- modeltime_wfs_fit(.wfsets = model_work, 
                             .split_prop = 0.8, 
                             .serie=df)
 model_fit
+model_metrics <- modeltime_wfs_rank(model_fit,
+                              rank_metric = "rsq",
+                              minimize = FALSE)
+model_metrics[1:20,] %>%
+  select(-`.fit_model`) %>%
+  mypdf1::pdf1_tbl("Métricas")
+```
+
+```{r}
+modeltime_wfs_forecast(.wfs_results = model_fit, 
+                       .serie = df, 
+                       .split_prop=0.8) %>% 
+  plot_modeltime_forecast(.interactive=FALSE)
+
 ```
 
