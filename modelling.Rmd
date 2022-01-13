@@ -1,0 +1,128 @@
+---
+title: "modeling"
+author: "Alisson Rosa e Vítor Pereira"
+abstract: "One Piece > Naruto"
+header-includes:
+   - \usepackage[brazil]{babel}
+   - \usepackage{bm}
+geometry: left=1.7cm, right=1.7cm, top=2.5cm, bottom=2.2cm
+output:
+  bookdown::pdf_document2:
+editor_options:
+  chunk_output_type: console
+indent: true
+---
+
+```{r setup, include=FALSE}
+options(digits = 3) # Arrendodamento
+ggplot2::theme_set(ggplot2::theme_minimal()) # Tema dos gráficos produzidos no ggplot2
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.7)
+# devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
+
+library(tidyverse)
+library(tidymodels)
+library(modeltime)
+library(forecast)
+library(sknifedatar)
+```
+
+```{r}
+df <- read_csv("naruto.csv")
+```
+
+```{r}
+splits <- initial_time_split(df, prop=0.8)
+df_train=training(splits)
+df_test=testing(splits)
+initial_time_split(df, prop = 0.8) %>%
+  timetk::tk_time_series_cv_plan() %>%
+  timetk::plot_time_series_cv_plan(as.Date(Time), rate, .interactive = FALSE,
+                           .title = "Avaliação de Naruto Shippuden dados de Treino / Teste") +
+  theme(strip.text = element_blank())
+```
+
+```{r}
+df <- df %>% mutate(Rate = log(rate))
+
+recipe_base <- recipe(rate~Time, data=df)
+
+recipe_date_features <- recipe_base %>% 
+  step_date(date, features = c('month','year'))
+
+recipe_date_extrafeatures <- recipe_date_features %>% 
+  step_date(date, features = c('quarter','semester'))
+       
+recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>% 
+  step_lag(value, lag = 1:6) %>% 
+  timetk::step_ts_impute(all_numeric(), period=365)
+  
+recipe_date_extrafeatures_fourier <-recipe_date_extrafeatures  %>% 
+  timetk::step_fourier(date, period = 365/12, K = 1)
+
+recipe_base1 <- recipe(Rate~Time, data=df)
+
+recipe_date_features1 <- recipe_base %>% 
+  step_date(date, features = c('month','year'))
+
+recipe_date_extrafeatures1 <- recipe_date_features %>% 
+  step_date(date, features = c('quarter','semester'))
+       
+recipe_date_extrafeatures_lag1 <- recipe_date_extrafeatures %>% 
+  step_lag(value, lag = 1:6) %>% 
+  timetk::step_ts_impute(all_numeric(), period=365)
+  
+recipe_date_extrafeatures_fourier1 <-recipe_date_extrafeatures  %>% 
+  timetk::step_fourier(date, period = 365/12, K = 1)
+```
+
+```{r}
+prophet_boost <- prophet_boost(mode = 'regression') %>% 
+  set_engine("prophet_xgboost")
+
+prophet_boost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_range = 0.8,
+    logistic_floor = min(data$value),
+    logistic_cap = max(data$value),
+    growth = 'logistic'
+  ) %>%
+  set_engine("prophet_xgboost")
+
+mars <- mars( mode = 'regression') %>% 
+  set_engine('earth')
+
+nnetar <- nnetar_reg() %>% 
+  set_engine("nnetar")
+
+auto_arima_boost <- arima_boost() %>% 
+  set_engine('arima_xgboost')
+```
+
+```{r}
+model_work <- workflow_set(
+  preproc = list(
+    base                  = recipe_base,
+    features              = recipe_date_features, 
+    extrafeatures         = recipe_date_extrafeatures,
+    extrafeatures_lag     = recipe_date_extrafeatures_lag,
+    extrafeatures_fourier = recipe_date_extrafeatures_fourier
+  ),
+  models  = list(
+    M_arima_boost       = auto_arima_boost,
+    M_prophet_boost_log = prophet_boost_log, 
+    M_prophet_boost     = prophet_boost,
+    M_mars              = mars,
+    M_nnetar            = nnetar
+  ),
+  cross   = TRUE
+)
+model_work <- model_work %>% anti_join(
+    tibble(wflow_id = c("extrafeatures_lag_M_nnetar", 
+                        "extrafeatures_lag_M_mars")), 
+            by = "wflow_id")
+model_fit <- modeltime_wfs_fit(.wfsets = model_work, 
+                            .split_prop = 0.8, 
+                            .serie=df)
+model_fit
+```
+
