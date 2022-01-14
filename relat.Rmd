@@ -348,7 +348,7 @@ df1 %>%
 
 ## Suavização Exponencial
 ### Com pacote ModelTime
-Estamos usando a avaliação dos episódios do animes como variável dependente de duas formas: Na forma original e aplicando logaritmo. Usaremos também 6 modelos: ETS (M, M, M), ETS(M,A,M), Croston, Theta, Smooth_es(A,A,A) e Smooth_es(A,A,M).
+Estamos usando a avaliação dos episódios do anime como variável dependente de duas formas: Na forma original e aplicando logaritmo. Usaremos também 6 modelos: ETS (M, M, M), ETS(M,A,M), Croston, Theta, Smooth_es(A,A,A) e Smooth_es(A,A,M).
 
 ```{r}
 splits <- initial_time_split(df, prop=0.8)
