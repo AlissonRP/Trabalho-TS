@@ -308,9 +308,9 @@ ggplot()+
 ```{r, results = F}
 op1 <- optim(par = c(0.5), fn = calcSSE, method = "SANN", data = df1, regressor = "rate", time = "Time")
 rl1 <- loess(rate ~ as.numeric(Time), data = df1, span = op1$par)
-###predict(rl1,seq(as.Date("2017-03-23"), length = 5, by = 'week'))
+predict(rl1,seq(as.Date("2017-03-23"), length = 5, by = 'week'))
 prl <- predict(rl1, as.numeric(df1$Time), se = T)
-df1 <- cbind(df, prl$fit)
+df1 <- cbind(df, prl$fit) #Página 78, linha 45 à 52.
 ```
 
 
@@ -467,8 +467,8 @@ teste <- window(dfts[,1], start=c(2014,38))
 h1 <- holt(treino, h = 100)
 h2 <- holt(treino, damped=TRUE, h = 100)
 
-#hw(treino[350:400],seasonal="multiplicative", h = 10) #Não consegui utilizar voltou o erro de frequência
-#h1$model$
+HoltWinters(treino,seasonal="multiplicative") #Não consegui utilizar voltou o erro de frequência
+h1$model$
 ```
 #### Holt não Amortecido
 

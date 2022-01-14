@@ -54,7 +54,7 @@ recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>%
   step_lag(rate, lag = 1:6) %>% 
   timetk::step_ts_impute(all_numeric(), period=365)
   
-recipe_date_extrafeatures_fourier <-recipe_date_extrafeatures  %>% 
+recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>% 
   timetk::step_fourier(Time, period = 365/12, K = 1)
 ```
 
@@ -162,9 +162,8 @@ model_fit <- modeltime_wfs_fit(.wfsets = model_work,
                             .serie=df)
 model_fit
 model_metrics <- modeltime_wfs_rank(model_fit,
-                              rank_metric = "rsq",
-                              minimize = FALSE)
-model_metrics[1:20,] %>%
+                              rank_metric = "rmse")
+model_metrics %>%
   select(-`.fit_model`) %>%
   mypdf1::pdf1_tbl("Métricas")
 ```
