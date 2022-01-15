@@ -270,7 +270,7 @@ theta <-  exp_smoothing() %>%
 ```
 
 ```{r}
-model_work1 <- workflow_set(
+model_work2 <- workflow_set(
   preproc = list(
     base                  = recipe_base,
     features              = recipe_date_features, 
@@ -281,107 +281,53 @@ model_work1 <- workflow_set(
   models  = list(
     M_croston           = croston,
     M_theta             = theta,
-    M_etsauto           = ets_auto,
-    M_smooth            = smooth_ets_auto,
-    M_etsANN = etsANN,
-    M_etsANA = etsANA,
-    M_etsANM = etsANM,
-    M_etsAANN = etsAANN,
-    M_etsAAND = etsAAND,
-    M_etsAAAN = etsAAAN,
-    M_etsAAAD = etsAAAD,
-    M_etsAAMN = etsAAMN,
-    M_etsAAMD = etsAAMD,
-    M_etsAMNN = etsAMNN,
-    M_etsAMND = etsAMND,
-    M_etsAMAN = etsAMAN,
-    M_etsAMAD = etsAMAD,
-    M_etsAMMN = etsAMMN,
-    M_etsAMMD = etsAMMD,
-    M_etsMNN = etsMNN,
-    M_etsMNA = etsMNA,
-    M_etsMNM = etsMNM,
+    ##M_etsauto           = ets_auto,
+    ##M_smooth            = smooth_ets_auto,
+    ##M_etsANN = etsANN,
+    ##M_etsANA = etsANA,
+    #M_etsANM = etsANM,
+    ##M_etsAANN = etsAANN,
+    ##M_etsAAND = etsAAND,
+    ##M_etsAAAN = etsAAAN,
+    ##M_etsAAAD = etsAAAD,
+    #M_etsAAMN = etsAAMN,
+    #M_etsAAMD = etsAAMD,
+    #M_etsAMNN = etsAMNN,
+    #M_etsAMND = etsAMND,
+    #M_etsAMAN = etsAMAN,
+    #M_etsAMAD = etsAMAD,
+    #M_etsAMMN = etsAMMN,
+    #M_etsAMMD = etsAMMD,
+    #M_etsMNN = etsMNN,
+    #M_etsMNA = etsMNA,
+    ##M_etsMNM = etsMNM,
     M_etsMANN = etsMANN,
     M_etsMAND = etsMAND,
-    M_etsMAAN = etsMAAN,
-    M_etsMAAD = etsMAAD,
-    M_etsMAMN = etsMAMN,
-    M_etsMAMD = etsMAMD,
-    M_etsMMNN = etsMANN,
-    M_etsMMND = etsMMND,
-    M_etsMMAN = etsMMAN,
-    M_etsMMAD = etsMMAD,
+    ##M_etsMAAN = etsMAAN,
+    ##M_etsMAAD = etsMAAD,
+    ##M_etsMAMN = etsMAMN,
+    ##M_etsMAMD = etsMAMD,
+    ##M_etsMMNN = etsMANN,
+    ##M_etsMMND = etsMMND,
+    #M_etsMMAN = etsMMAN,
+    #M_etsMMAD = etsMMAD,
     M_etsMMMN = etsMMMN,
     M_etsMMMD = etsMMMD,
-    M_smooth_etsANN = smooth_etsANN,
+    ##M_smooth_etsANN = smooth_etsANN,
     M_smooth_etsANA = smooth_etsANA,
     M_smooth_etsANM = smooth_etsANM,
-    M_smooth_etsAANN = smooth_etsAANN,
-    M_smooth_etsAAND = smooth_etsAAND,
-    M_smooth_etsAAAN = smooth_etsAAAN,
-    M_smooth_etsAAAD = smooth_etsAAAD,
-    M_smooth_etsAAMN = smooth_etsAAMN,
-    M_smooth_etsAAMD = smooth_etsAAMD,
-    M_smooth_etsAMNN = smooth_etsAMNN,
-    M_smooth_etsAMND = smooth_etsAMND,
-    M_smooth_etsAMAN = smooth_etsAMAN,
-    M_smooth_etsAMAD = smooth_etsAMAD,
-    M_smooth_etsAMMN = smooth_etsAMMN,
-    M_smooth_etsAMMD = smooth_etsAMMD,
-    M_smooth_etsMNN = smooth_etsMNN,
-    M_smooth_etsMNA = smooth_etsMNA,
-    M_smooth_etsMNM = smooth_etsMNM,
-    M_smooth_etsMANN = smooth_etsMANN,
-    M_smooth_etsMAND = smooth_etsMAND,
-    M_smooth_etsMAAN = smooth_etsMAAN,
-    M_smooth_etsMAAD = smooth_etsMAAD,
-    M_smooth_etsMAMN = smooth_etsMAMN,
-    M_smooth_etsMAMD = smooth_etsMAMD,
-    M_smooth_etsMMNN = smooth_etsMMNN,
-    M_smooth_etsMMND = smooth_etsMMND,
-    M_smooth_etsMMAN = smooth_etsMMAN,
-    M_smooth_etsMMAD = smooth_etsMMAD,
-    M_smooth_etsMMMN = smooth_etsMMMN,
-    M_smooth_etsMMMD = smooth_etsMMMD
-  ),
-  cross   = TRUE
-)
-model_fit1 <- modeltime_wfs_fit(.wfsets = model_work1, 
-                            .split_prop = 0.8, 
-                            .serie=df)
-
-model_metrics1 <- modeltime_wfs_rank(model_fit1,
-                              rank_metric = "rsq", minimize = FALSE)
-model_metrics1 %>%
-  select(-`.fit_model`) %>%
-  mypdf1::pdf1_tbl("Métricas")
-```
-
-```{r}
-model_work2 <- workflow_set(
-  preproc = list(
-    base                  = recipe_base,
-    features              = recipe_date_features, 
-    extrafeatures         = recipe_date_extrafeatures,
-    extrafeatures_lag     = recipe_date_extrafeatures_lag,
-    extrafeatures_fourier = recipe_date_extrafeatures_fourier
-  ),
-  models  = list(
-    M_smooth_etsANN = smooth_etsANN,
-    M_smooth_etsANA = smooth_etsANA,
-    M_smooth_etsANM = smooth_etsANM,
-    M_smooth_etsAAN = smooth_etsAAN,
-    M_smooth_etsAAA = smooth_etsAAA,
-    M_smooth_etsAAM = smooth_etsAAM,
-    M_smooth_etsAMN = smooth_etsAMN,
+    ##M_smooth_etsAAN = smooth_etsAAN,
+    ##M_smooth_etsAAA = smooth_etsAAA,
+    ##M_smooth_etsAAM = smooth_etsAAM,
+    ##M_smooth_etsAMN = smooth_etsAMN,
     M_smooth_etsAMA = smooth_etsAMA,
-    M_smooth_etsAMM = smooth_etsAMM,
+    ##M_smooth_etsAMM = smooth_etsAMM,
     M_smooth_etsMNN = smooth_etsMNN,
-    M_smooth_etsMNA = smooth_etsMNA,
+    #M_smooth_etsMNA = smooth_etsMNA,
     M_smooth_etsMNM = smooth_etsMNM,
     M_smooth_etsMAN = smooth_etsMAN,
     M_smooth_etsMAA = smooth_etsMAA,
-    M_smooth_etsMAM = smooth_etsMAM,
+    ##M_smooth_etsMAM = smooth_etsMAM,
     M_smooth_etsMMN = smooth_etsMMN,
     M_smooth_etsMMA = smooth_etsMMA,
     M_smooth_etsMMM = smooth_etsMMM
@@ -393,42 +339,11 @@ model_fit2 <- modeltime_wfs_fit(.wfsets = model_work2,
                             .serie=df)
 
 model_metrics2 <- modeltime_wfs_rank(model_fit2,
-                              rank_metric = "mae")
+                              rank_metric = "rmse",
+                              minimize = F)
 model_metrics2 %>%
   select(-`.fit_model`) %>%
   mypdf1::pdf1_tbl("Métricas")
 ```
 
-```{r}
-model_work2 <- workflow_set(
-  preproc = list(
-    base                  = recipe_base,
-    features              = recipe_date_features, 
-    extrafeatures         = recipe_date_extrafeatures,
-    extrafeatures_lag     = recipe_date_extrafeatures_lag,
-    extrafeatures_fourier = recipe_date_extrafeatures_fourier
-  ),
-  models  = list(
-    M_smooth_etsANN = smooth_etsANN,
-    M_smooth_etsANA = smooth_etsANA,
-    M_smooth_etsANM = smooth_etsANM,
-    M_smooth_etsAAN = smooth_etsAAN,
-    M_smooth_etsAAA = smooth_etsAAA,
-    M_smooth_etsAAM = smooth_etsAAM,
-    M_smooth_etsAMN = smooth_etsAMN,
-    M_smooth_etsAMA = smooth_etsAMA,
-    M_smooth_etsAMM = smooth_etsAMM,
-    M_smooth_etsMNN = smooth_etsMNN,
-    M_smooth_etsMNA = smooth_etsMNA,
-    M_smooth_etsMNM = smooth_etsMNM,
-    M_smooth_etsMAN = smooth_etsMAN,
-    M_smooth_etsMAA = smooth_etsMAA,
-    M_smooth_etsMAM = smooth_etsMAM,
-    M_smooth_etsMMN = smooth_etsMMN,
-    M_smooth_etsMMA = smooth_etsMMA,
-    M_smooth_etsMMM = smooth_etsMMM
-  ),
-  cross   = TRUE
-)
-```
 
