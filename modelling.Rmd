@@ -4,7 +4,7 @@ author: "Alisson Rosa e Vítor Pereira"
 abstract: "One Piece > Naruto"
 header-includes:
    - \usepackage[brazil]{babel}
-   - \usepackage{bm}
+   - \usepackage{bm, dcolumn,placeins}
 geometry: left=1.7cm, right=1.7cm, top=2.5cm, bottom=2.2cm
 output:
   bookdown::pdf_document2:
@@ -24,11 +24,17 @@ library(tidymodels)
 library(modeltime)
 library(forecast)
 library(sknifedatar)
+library(kableExtra)
 ```
 
 ```{r}
 df <- read_csv("naruto.csv")
 ```
+# Introdução
+Aqui iremos testar diversos modelos como: suavização exponencial (ets), suavização exponencial no modelo de espaço de estado SSOE, suavização exponencial theta (equivalente a suavização exponencial simples com tendencia constante (drift)  e o procedimento Prophet do Facebook, é um modelo aditivo utilizando tendências não lineares, para entender mais o modelo Prophet [\textcolor{blue}{clique aqui.}](https://facebook.github.io/prophet/)
+# Modelagem
+
+## Dados de treino e teste
 
 ```{r}
 splits <- initial_time_split(df, prop=0.8)
@@ -40,12 +46,16 @@ initial_time_split(df, prop = 0.8) %>%
                            .title = "Avaliação de Naruto Shippuden dados de Treino / Teste") +
   theme(strip.text = element_blank())
 ```
-
+## Recipes
+Utilizaremos 6 recipes: normal, mês e ano como covariáveis, dia do ano como covariável, trimestre e semestre, utilizando lags e utilizando séries de Fourier.
 ```{r}
 recipe_base <- recipe(rate~Time, data=df)
 
 recipe_date_features <- recipe_base %>% 
   step_date(Time, features = c('month','year'))
+
+recipe_date_dayfeatures <- recipe_base %>% 
+  step_date(Time, features = c('doy'))
 
 recipe_date_extrafeatures <- recipe_date_features %>% 
   step_date(Time, features = c('quarter','semester'))
@@ -58,115 +68,11 @@ recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>%
   timetk::step_fourier(Time, period = 365/12, K = 1)
 ```
 
-```{r}
-prophet_boost <- prophet_boost(mode = 'regression') %>% 
-  set_engine("prophet_xgboost")
+## Modelos
 
-prophet_boost_log <- prophet_boost(
-    mode = 'regression',
-    changepoint_range = 0.8,
-    logistic_floor = min(df$rate),
-    logistic_cap = max(df$rate),
-    growth = 'logistic'
-  ) %>%
-  set_engine("prophet_xgboost")
-
-#mars <- mars(mode = 'regression') %>% 
-#  set_engine('earth') #precisa do pacote "earth"
-
-#auto_arima_boost <- arima_boost() %>% 
-#  set_engine('arima_xgboost')
-
-#arima_boost <- arima_boost(
-#    tree_depth = 6,
-#    learn_rate = 0.1
-#) %>%
-#    set_engine(engine = "arima_xgboost")
-ets <- exp_smoothing() %>%
-  set_engine('ets')
-etsMMM <- exp_smoothing(error = "multiplicative",trend = "multiplicative",season = "multiplicative") %>%
-    set_engine("ets")
-etsMAM <- exp_smoothing(error = "multiplicative",trend = "additive",season = "multiplicative")  %>%
-    set_engine("ets")
-croston <- exp_smoothing() %>%
-    set_engine("croston")
-theta <-  exp_smoothing() %>%
-    set_engine("theta")
-smooth_es_AAM <-exp_smoothing(
-  error = "additive",
-  trend = "additive",
-  season = "multiplicative"
-) %>%
-    set_engine("smooth_es")
-smooth_es_AAA <- exp_smoothing(
-  error = "additive",
-  trend = "additive",
-  season = "additive"
-) %>%
-  set_engine("smooth_es")
-smooth_es_MAM <- exp_smoothing(
-  error = "multiplicative",
-  trend = "additive",
-  season = "multiplicative"
-) %>%
-  set_engine("smooth_es")
-etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
-    set_engine("ets")
-ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
-    set_engine("ets")
-```
-
-```{r}
-model_work <- workflow_set(
-  preproc = list(
-    base                  = recipe_base,
-    features              = recipe_date_features, 
-    extrafeatures         = recipe_date_extrafeatures,
-    extrafeatures_lag     = recipe_date_extrafeatures_lag,
-    extrafeatures_fourier = recipe_date_extrafeatures_fourier
-  ),
-  models  = list(
-    #M_auto_arima_boost       = auto_arima_boost,
-    M_prophet_boost_log = prophet_boost_log, 
-    M_prophet_boost     = prophet_boost,
-    #M_mars              = mars,
-    #M_arima_boost       = arima_boost,
-    M_ets               = ets,
-    M_etsMMM            = etsMMM, 
-    M_etsMAM            = etsMAM,
-    M_croston           = croston,
-    M_theta             = theta,
-    M_smoothAAM         = smooth_es_AAM, 
-    M_smoothAAA         = smooth_es_AAA,
-    M_smoothMAM         = smooth_es_MAM,
-    M_etsAAA            = etsAAA, 
-    M_etsauto           = ets_auto 
-    #M_etsAAM            = etsAAM
-  ),
-  cross   = TRUE
-)
-model_work <- model_work %>% anti_join(
-    tibble(wflow_id = c("extrafeatures_lag_M_mars")), 
-            by = "wflow_id")
-model_fit <- modeltime_wfs_fit(.wfsets = model_work, 
-                            .split_prop = 0.8, 
-                            .serie=df)
-model_fit
-model_metrics <- modeltime_wfs_rank(model_fit,
-                              rank_metric = "rmse")
-model_metrics %>%
-  select(-`.fit_model`) %>%
-  mypdf1::pdf1_tbl("Métricas")
-```
-
-```{r}
-modeltime_wfs_forecast(.wfs_results = model_fit, 
-                       .serie = df, 
-                       .split_prop=0.8) %>% 
-  plot_modeltime_forecast(.interactive=FALSE)
-```
-
-```{r}
+### Suavização exponencial
+Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores. Sendo ao total 51 modelos testados.
+```{r, eval = F}
 etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
     set_engine("ets")
 etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
@@ -269,11 +175,14 @@ theta <-  exp_smoothing() %>%
     set_engine("theta")
 ```
 
-```{r}
+### Ajustando os modelos
+Para os modelos de suavização exponencial iremos os escolher pelo menos um modelo que seja o melhor em cada uma dessas categorias: Erro Aditivo, Erro Multiplicativo, Sem Tendência, Tendência Aditiva, Tendência Multiplicativa, Tendência Amortecida, Sem Sazonalidade, Sazonalidade Aditiva, Sazonalidade Multiplicativa e bom R².
+```{r, eval = FALSE}
 model_work2 <- workflow_set(
   preproc = list(
     base                  = recipe_base,
     features              = recipe_date_features, 
+    features_day          = recipe_date_dayfeatures,
     extrafeatures         = recipe_date_extrafeatures,
     extrafeatures_lag     = recipe_date_extrafeatures_lag,
     extrafeatures_fourier = recipe_date_extrafeatures_fourier
@@ -302,7 +211,7 @@ model_work2 <- workflow_set(
     #M_etsMNA = etsMNA,
     ##M_etsMNM = etsMNM,
     M_etsMANN = etsMANN,
-    M_etsMAND = etsMAND,
+    ##M_etsMAND = etsMAND,
     ##M_etsMAAN = etsMAAN,
     ##M_etsMAAD = etsMAAD,
     ##M_etsMAMN = etsMAMN,
@@ -310,11 +219,11 @@ model_work2 <- workflow_set(
     ##M_etsMMNN = etsMANN,
     ##M_etsMMND = etsMMND,
     #M_etsMMAN = etsMMAN,
-    #M_etsMMAD = etsMMAD,
+    M_etsMMAD = etsMMAD,
     M_etsMMMN = etsMMMN,
-    M_etsMMMD = etsMMMD,
+    #M_etsMMMD = etsMMMD,
     ##M_smooth_etsANN = smooth_etsANN,
-    M_smooth_etsANA = smooth_etsANA,
+    ##M_smooth_etsANA = smooth_etsANA,
     M_smooth_etsANM = smooth_etsANM,
     ##M_smooth_etsAAN = smooth_etsAAN,
     ##M_smooth_etsAAA = smooth_etsAAA,
@@ -324,12 +233,12 @@ model_work2 <- workflow_set(
     ##M_smooth_etsAMM = smooth_etsAMM,
     M_smooth_etsMNN = smooth_etsMNN,
     #M_smooth_etsMNA = smooth_etsMNA,
-    M_smooth_etsMNM = smooth_etsMNM,
+    #M_smooth_etsMNM = smooth_etsMNM,
     M_smooth_etsMAN = smooth_etsMAN,
     M_smooth_etsMAA = smooth_etsMAA,
     ##M_smooth_etsMAM = smooth_etsMAM,
-    M_smooth_etsMMN = smooth_etsMMN,
-    M_smooth_etsMMA = smooth_etsMMA,
+    ##M_smooth_etsMMN = smooth_etsMMN,
+    ##M_smooth_etsMMA = smooth_etsMMA,
     M_smooth_etsMMM = smooth_etsMMM
   ),
   cross   = TRUE
@@ -338,12 +247,503 @@ model_fit2 <- modeltime_wfs_fit(.wfsets = model_work2,
                             .split_prop = 0.8, 
                             .serie=df)
 
+```
+
+Já no ajuste de modelos podemos perceber que a suavização exponencial não pude utilizar de algumas combinações de erro, tendencia e sazonalidade, esses são modelos são: ets(A,N,M), ets(A,A,M), ets(A,AD,M), ets(A,M,N), ets(A,MD,N), ets(A,M,A), ets(A,MD,A), ets(A,M,M), ets(A,MD,M), ets(M,M,A) e ets(M,MD,A).
+
+```{r, eval= FALSE}
 model_metrics2 <- modeltime_wfs_rank(model_fit2,
-                              rank_metric = "rmse",
-                              minimize = F)
+                              rank_metric = "rsq", minimize = F)
 model_metrics2 %>%
+  select(-c(`.fit_model`, .model_id, .type)) %>%  distinct(`.model_desc`,.keep_all = T) %>%
+  mypdf1::pdf1_tbl("Métricas", format = 'latex', code = T)
+```
+\FloatBarrier
+\begin{table}
+
+\caption{Métricas}
+\centering
+\begin{tabular}[t]{c|c|c|c|c|c|c|c}
+\hline
+rank & .model\_desc & mae & mape & mase & smape & rmse & rsq\\
+\hline
+1 & ETS(AMA) & 1.7832282 & 22.88661 & 3.879991 & 27.25304 & 2.187881 & 0.1628969\\
+\hline
+2 & ETSX(AMA) & 1.8083857 & 23.20880 & 3.934729 & 27.73209 & 2.219819 & 0.1624729\\
+\hline
+3 & ETS(AMM) & 1.7932412 & 23.00407 & 3.901778 & 27.44338 & 2.201565 & 0.1623454\\
+\hline
+4 & ETSX(AMM) & 1.7486102 & 22.45791 & 3.804668 & 26.60930 & 2.143628 & 0.1620309\\
+\hline
+5 & ETSX(AAA) & 1.8007971 & 23.14249 & 3.918218 & 27.60183 & 2.207568 & 0.1607854\\
+\hline
+7 & ETSX(AAM) & 3.3375819 & 51.69319 & 7.261991 & 39.19193 & 3.570799 & 0.1551175\\
+\hline
+8 & THETA METHOD & 1.2846034 & 16.83626 & 2.795071 & 18.55142 & 1.544815 & 0.1541242\\
+\hline
+14 & ETS(M,A,N) & 0.9506912 & 13.84659 & 2.068537 & 13.54501 & 1.107840 & 0.1541242\\
+\hline
+20 & ETS(A,A,N) & 1.4355075 & 18.59210 & 3.123412 & 21.03802 & 1.742123 & 0.1541242\\
+\hline
+21 & ETS(AAN) & 1.4423830 & 18.67268 & 3.138372 & 21.15451 & 1.751335 & 0.1541242\\
+\hline
+27 & ETSX(AAN) & 1.5735381 & 20.26498 & 3.423742 & 23.43613 & 1.923162 & 0.1541242\\
+\hline
+28 & ETSX(MAN) & 0.9502657 & 13.83197 & 2.067611 & 13.53801 & 1.107868 & 0.1541242\\
+\hline
+29 & ETS(MAN) & 0.9503808 & 13.83595 & 2.067861 & 13.53914 & 1.107940 & 0.1541242\\
+\hline
+31 & ETSX(ANN) & 1.2597240 & 16.59663 & 2.740938 & 18.15692 & 1.506055 & 0.1541242\\
+\hline
+33 & ETSX(MNN) & 1.2462616 & 16.49726 & 2.711646 & 17.94631 & 1.480544 & 0.1541241\\
+\hline
+35 & ETSX(MMN) & 1.0984382 & 14.83984 & 2.390008 & 15.68178 & 1.309101 & 0.1541062\\
+\hline
+37 & ETS(MMN) & 1.1107974 & 14.93255 & 2.416900 & 15.86351 & 1.328276 & 0.1541059\\
+\hline
+38 & ETSX(AMN) & 2.2029984 & 28.50951 & 4.793337 & 35.27807 & 2.620894 & 0.1538384\\
+\hline
+39 & ETS(AMN) & 1.8672729 & 23.91854 & 4.062857 & 28.84935 & 2.294861 & 0.1537093\\
+\hline
+41 & ETSX(MAM) & 2.4618725 & 36.27977 & 5.356602 & 29.36916 & 2.852528 & 0.1463684\\
+\hline
+42 & ETSX(MMA) & 1.1879523 & 18.10614 & 2.584775 & 16.33666 & 1.432187 & 0.1445788\\
+\hline
+43 & ETS(MAM) & 1.2641206 & 19.27180 & 2.750504 & 17.19557 & 1.525695 & 0.1433840\\
+\hline
+45 & ETS(AAM) & 1.4157791 & 18.44125 & 3.080486 & 20.70461 & 1.704873 & 0.1421286\\
+\hline
+46 & ETSX(MAA) & 0.9969804 & 14.88651 & 2.169254 & 14.12988 & 1.161846 & 0.1410447\\
+\hline
+48 & ETS(MMA) & 0.9930031 & 14.67107 & 2.160600 & 14.06794 & 1.151538 & 0.1390282\\
+\hline
+50 & ETS(M,AD,N) & 1.2566748 & 16.58070 & 2.734303 & 18.10941 & 1.499276 & 0.1351984\\
+\hline
+57 & ETS(MAA) & 0.9588516 & 13.84171 & 2.086293 & 13.66376 & 1.123567 & 0.1329984\\
+\hline
+59 & ETS(A,A,A) & 1.4551112 & 18.85483 & 3.166066 & 21.37075 & 1.766832 & 0.1171396\\
+\hline
+66 & ETS(AAA) & 1.3650118 & 17.92009 & 2.970026 & 19.86302 & 1.630782 & 0.1079747\\
+\hline
+67 & ETS(M,MD,N) & 1.2538124 & 16.55009 & 2.728075 & 18.06417 & 1.495339 & 0.0849640\\
+\hline
+73 & ETSX(MMM) & 1.0910167 & 14.79220 & 2.373861 & 15.57832 & 1.300304 & 0.0827720\\
+\hline
+75 & ETS(MMM) & 1.1242293 & 15.11030 & 2.446125 & 16.07203 & 1.344843 & 0.0703107\\
+\hline
+76 & ETS(A,AD,N) & 1.2767148 & 16.74648 & 2.777907 & 18.42529 & 1.534574 & 0.0624370\\
+\hline
+82 & ETS(M,AD,A) & 1.3483684 & 17.57995 & 2.933813 & 19.58484 & 1.626831 & 0.0582191\\
+\hline
+88 & ETS(M,M,M) & 1.1572583 & 15.51976 & 2.517991 & 16.57406 & 1.377681 & 0.0310785\\
+\hline
+94 & ETS(M,A,A) & 1.2913573 & 17.00737 & 2.809766 & 18.66618 & 1.541874 & 0.0222350\\
+\hline
+100 & ETS(M,A,M) & 1.2695095 & 16.76412 & 2.762229 & 18.31714 & 1.513554 & 0.0140288\\
+\hline
+106 & ETS(A,N,A) & 1.2785790 & 16.84264 & 2.781963 & 18.46063 & 1.530631 & 0.0125995\\
+\hline
+112 & ETS(M,MD,M) & 1.2622415 & 16.68977 & 2.746415 & 18.20149 & 1.501747 & 0.0119256\\
+\hline
+118 & ETS(M,N,M) & 1.2830405 & 16.90115 & 2.791671 & 18.53364 & 1.535727 & 0.0112603\\
+\hline
+124 & ETS(A,AD,A) & 1.2720614 & 16.77874 & 2.767782 & 18.35787 & 1.519923 & 0.0101815\\
+\hline
+130 & ETS(M,AD,M) & 1.2692679 & 16.74742 & 2.761704 & 18.31245 & 1.513117 & 0.0100718\\
+\hline
+136 & ETS(ANM) & 1.2647154 & 16.70804 & 2.751798 & 18.24044 & 1.507543 & 0.0092757\\
+\hline
+137 & ETSX(ANM) & 1.2533768 & 16.60980 & 2.727127 & 18.06192 & 1.489224 & 0.0090731\\
+\hline
+138 & ETS(ANA) & 1.2664086 & 16.73464 & 2.755482 & 18.26878 & 1.509865 & 0.0090474\\
+\hline
+139 & ETSX(ANA) & 1.2668817 & 16.73910 & 2.756512 & 18.27640 & 1.510641 & 0.0089136\\
+\hline
+140 & ETS(MNM) & 1.2599823 & 16.65494 & 2.741500 & 18.16517 & 1.500141 & 0.0084351\\
+\hline
+141 & ETSX(MNM) & 1.2600859 & 16.65582 & 2.741725 & 18.16688 & 1.500300 & 0.0082567\\
+\hline
+145 & ETS(MNA) & 1.2691353 & 16.74591 & 2.761415 & 18.31117 & 1.513827 & 0.0071942\\
+\hline
+146 & ETSX(MNA) & 1.2689581 & 16.74419 & 2.761030 & 18.30839 & 1.513497 & 0.0070945\\
+\hline
+148 & ETS(M,N,A) & 1.2616011 & 16.66740 & 2.745022 & 18.19174 & 1.503203 & 0.0047931\\
+\hline
+154 & CROSTON METHOD & 1.0566146 & 15.54127 & 2.299008 & 15.09949 & 1.204980 & NA\\
+\hline
+155 & ETS(A,N,N) & 1.2764738 & 16.74424 & 2.777383 & 18.42147 & 1.534184 & NA\\
+\hline
+157 & ETS(M,N,N) & 1.2529108 & 16.54194 & 2.726114 & 18.05000 & 1.493865 & NA\\
+\hline
+158 & ETS(ANN) & 1.2766417 & 16.74570 & 2.777748 & 18.42413 & 1.534473 & NA\\
+\hline
+160 & ETS(MNN) & 1.2529333 & 16.54211 & 2.726163 & 18.05036 & 1.493907 & NA\\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Assim os modelos escolhidos foram: 
+  - ETSX(M,A,N) - melhor modelo
+  - ETS(M,A,N) - melhor modelo da suavização exponencial normal
+  - Croston - Bom método num geral e é de engine diferente
+  - Theta - Bom R² e é de engine diferente
+  - ETSX(M,A,A) - Melhor modelo com sazonalidade aditiva
+  - ETSX(M,M,M) - Melhor modelo com sazonalide multiplicativa
+  - ETSX(A,N,M) - Melhor modelo com erro aditivo e sem tendencia
+  - ETS(M,M,M) - Segundo melhor modelo da suavização exponencial normal 
+  - ETS(M, MD, N) - Melhor modelo com tendencia amortecida
+  - ETSX(M,N,N) - Modelo equilibrado em todas as medidas e com bom R² entre os ETS()
+  - ETSX(A,M,A) - Modelo com melhor R²
+
+```{r, eval= FALSE}
+prophet_boost <- prophet_boost(mode = 'regression') %>% 
+  set_engine("prophet_xgboost")
+prophet_boost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_range = 0.8,
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic'
+  ) %>%
+  set_engine("prophet_xgboost")
+
+#mars <- mars(mode = 'regression') %>% 
+#  set_engine('earth') #precisa do pacote "earth"
+
+#auto_arima_boost <- arima_boost() %>% 
+#  set_engine('arima_xgboost')
+
+#arima_boost <- arima_boost(
+#    tree_depth = 6,
+#    learn_rate = 0.1
+#) %>%
+#    set_engine(engine = "arima_xgboost")
+```
+
+```{r, eval= FALSE}
+model_work1 <- workflow_set(
+  preproc = list(
+    base                  = recipe_base,
+    features              = recipe_date_features, 
+    features_day          = recipe_date_dayfeatures,
+    extrafeatures         = recipe_date_extrafeatures,
+    extrafeatures_lag     = recipe_date_extrafeatures_lag,
+    extrafeatures_fourier = recipe_date_extrafeatures_fourier
+  ),
+  models  = list(
+    M_croston           = croston,
+    M_theta             = theta,
+    M_etsMANN = etsMANN,
+    M_etsMMAD = etsMMAD,
+    M_etsMMMN = etsMMMN,
+    M_smooth_etsANM = smooth_etsANM,
+    M_smooth_etsAMA = smooth_etsAMA,
+    M_smooth_etsMNN = smooth_etsMNN,
+    M_smooth_etsMAN = smooth_etsMAN,
+    M_smooth_etsMAA = smooth_etsMAA,
+    M_smooth_etsMMM = smooth_etsMMM,
+    #M_auto_arima_boost       = auto_arima_boost,
+    M_prophet_boost_log = prophet_boost_log, 
+    M_prophet_boost     = prophet_boost
+    #M_mars              = mars,
+    #M_arima_boost       = arima_boost,
+    #M_etsAAM            = etsAAM
+  ),
+  cross   = TRUE
+)
+model_fit1 <- modeltime_wfs_fit(.wfsets = model_work1, 
+                            .split_prop = 0.8, 
+                            .serie=df)
+model_metrics1 <- modeltime_wfs_rank(model_fit1,
+                              rank_metric = "rmse")
+model_metrics1 %>%
   select(-`.fit_model`) %>%
   mypdf1::pdf1_tbl("Métricas")
 ```
 
+```{r, eval= FALSE}
+modeltime_wfs_forecast(.wfs_results = model_fit, 
+                       .serie = df, 
+                       .split_prop=0.8) %>% 
+  plot_modeltime_forecast(.interactive=FALSE)
+```
 
+### Tunando XGBoost, Lightgbm e Catboost
+
+```{r, eval= FALSE}
+df_resamples <- df %>%
+  timetk::time_series_cv(
+    date_var    = Time, 
+    assess      = "2 years",
+    skip        = "1 year",
+    cumulative  = TRUE,
+    slice_limit = 6
+  )
+
+
+recipe_base <- recipe(rate~Time, data=training(df_resamples$splits[[1]]))
+
+recipe_date_features <- recipe_base %>% 
+  step_date(Time, features = c('month','year'))
+
+recipe_date_extrafeatures <- recipe_date_features %>% 
+  step_date(Time, features = c('quarter','semester'))
+       
+recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>% 
+  step_lag(rate, lag = 1:6) %>% 
+  timetk::step_ts_impute(all_numeric(), period=365)
+
+recipe_date_dayfeatures <- recipe_date_extrafeatures_lag  %>% 
+  step_date(Time, features = c('doy'))
+
+recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>% 
+  timetk::step_fourier(Time, period = 365/12, K = 1)
+
+df_resamples %>%
+  timetk::tk_time_series_cv_plan() %>% 
+  timetk::plot_time_series_cv_plan(.date_var = Time, .value = rate)
+prophet_light <- boostime::boost_prophet(growth = "linear",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "multiplicative",
+                                                       trees = 1000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                              set_engine("prophet_lightgbm", verbose = 0)
+prophet_catboost <- boostime::boost_prophet(growth = "linear",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "multiplicative",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_light_log <- boostime::boost_prophet(growth = "logistic",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       logistic_floor = min(df$rate),
+                                                       logistic_cap = max(df$rate),
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "multiplicative",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                              set_engine("prophet_lightgbm", verbose = 0)
+prophet_catboost_log <- boostime::boost_prophet(growth = "logistic",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       logistic_floor = min(df$rate),
+                                                       logistic_cap = max(df$rate),                                     
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "multiplicative",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_xgboost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 2000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+prophet_xgboost_ <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'linear',
+    trees = 1000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+```
+
+#### Lightgbm
+
+```{r, eval= FALSE}
+tune_work_light <- workflow() %>%
+    add_model(prophet_catboost_log) %>%
+    add_recipe(recipe_date_extrafeatures_lag)
+
+tune_work1_light<- workflow() %>%
+    add_model(prophet_light) %>%
+    add_recipe(recipe_date_features)
+
+tune_work2_light <- workflow() %>%
+    add_model(prophet_light) %>%
+    add_recipe(recipe_date_extrafeatures_fourier)
+
+tune_results_light <- tune_grid(
+    object     = tune_work_light,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work_light),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_result1s_light <- tune_grid(
+    object     = tune_work1_light,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work1_light),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_result1s2_light <- tune_grid(
+    object     = tune_work2_light,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work2_light),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tuned_best_light_rmse <- tune_results_light %>%
+    select_best("rmse")
+tuned_best_light_rsq <- tune_results_light %>%
+    select_best("rsq")
+
+fin_wflw <- tune_work_light %>%
+    finalize_workflow(parameters = tuned_best_light_rmse)
+
+wflw_fit <- fin_wflw %>%
+    fit(training(df_resamples$splits[[1]])) 
+(modeltime_tbl[2,] <- wflw_fit %>% modeltime_table())
+calibration_tbl <- modeltime_tbl %>% 
+                   modeltime_calibrate(
+                     testing(df_resamples$splits[[1]])
+                   )
+calibration_tbl %>%
+  modeltime_accuracy(
+    new_data = testing(df_resamples$splits[[1]])
+  ) %>%
+  table_modeltime_accuracy(.interactive = FALSE)
+```
+
+
+
+```{r, eval= FALSE}
+prophet_boost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 1000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+
+
+tune_work <- workflow() %>%
+    add_model(prophet_boost_log) %>%
+    add_recipe(recipe_date_extrafeatures_lag)
+
+
+tune_results <- tune_grid(
+    object     = tune_work,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tuned_best <- tune_results %>%
+    select_best("rsq")
+fin_wflw <- tune_work %>%
+    finalize_workflow(parameters = tuned_best)
+
+wflw_fit <- fin_wflw %>%
+    fit(training(df_resamples$splits[[1]])) 
+(modeltime_tbl <- wflw_fit %>% modeltime_table())
+calibration_tbl <- modeltime_tbl %>% 
+                   modeltime_calibrate(
+                     testing(df_resamples$splits[[1]])
+                   )
+calibration_tbl %>%
+  modeltime_accuracy(
+    new_data = testing(df_resamples$splits[[1]])
+  ) %>%
+  table_modeltime_accuracy(.interactive = FALSE)
+```
+
+## Pro meu grande amigo Alisson se divertir
+
+```{r, eval = FALSE}
+healthyR.ts::ts_model_spec_tune_template("prophet_xgboost")
+healthyR.ts::ts_model_spec_tune_template("prophet")
+
+recipe <- healthyR.ts::ts_auto_recipe(
+  .data     = df, 
+  .date_col = Time, 
+  .pred_col = rate
+)
+
+recipe_earth <- healthyR.ts::ts_wfs_mars(
+  .model_type = "earth", 
+  .recipe_list = recipe
+)
+
+split <- time_series_split(
+    df, Time, assess = 24, skip = 6, cumulative = TRUE
+)
+wf_fits <- recipe_earth %>%
+  modeltime_fit_workflowset(
+    data = training(split), 
+    control = control_fit_workflowset(allow_par = FALSE, verbose = TRUE)
+  )
+models_tbl <- wf_fits %>%
+  filter(.model != "NULL")
+calibration_tbl <- models_tbl %>%
+  modeltime_calibrate(new_data = testing(split))
+
+calibration_tbl
+output <- healthyR.ts::ts_model_auto_tune(
+  .modeltime_model_id = 1,
+  .calibration_tbl    = calibration_tbl,
+  .splits_obj         = split,
+  .drop_training_na   = TRUE,
+  .date_col           = Time,
+  .value_col          = rate,
+  .tscv_assess        = "24 months",
+  .tscv_skip          = "6 months",
+  .num_cores          = 1
+)
+output$data$calibration_tbl
+output$data$best_tuned_results
+fin_wflw <- wf_fits %>%
+    finalize_workflow(parameters = output$data$best_tuned_results_tbl)
+```
