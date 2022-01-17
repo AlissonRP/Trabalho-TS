@@ -74,102 +74,100 @@ recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>%
 ### Suavização exponencial
 Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores. Sendo ao total 51 modelos testados.
 ```{r, eval = F}
-etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
-    set_engine("ets")
-etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
-    set_engine("ets")
-etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("ets")
-etsAANN <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'none') %>%
-    set_engine("ets")
-etsAAND <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'damped') %>%
-    set_engine("ets")
-etsAAAN <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'none') %>%
-    set_engine("ets")
-etsAAAD <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'damped') %>%
-    set_engine("ets")
-etsAAMN <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'none') %>%
-    set_engine("ets")
-etsAAMD <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'damped') %>%
-    set_engine("ets")
-etsAMNN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'none') %>%
-    set_engine("ets")
-etsAMND <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'damped') %>%
-    set_engine("ets")
-etsAMAN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'none') %>%
-    set_engine("ets")
-etsAMAD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'damped') %>%
-    set_engine("ets")
-etsAMMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
-    set_engine("ets")
-etsAMMD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
-    set_engine("ets")
-etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
-  set_engine("ets")
-etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%
-  set_engine("ets")
-etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("ets")
+#etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+#    set_engine("ets")
+#etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+#    set_engine("ets")
+#etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("ets")
+#etsAANN <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAND <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAAAN <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAAD <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAAMN <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAMD <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+#set_engine("ets")
+#etsAMNN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMND <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAMAN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMAD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAMMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMMD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+#    set_engine("ets")
+#etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
+#  set_engine("ets")
+#etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%
+#  set_engine("ets")
+#etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("ets")
 etsMANN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'none') %>%
   set_engine("ets")
-etsMAND <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'damped') %>%
-  set_engine("ets")
-etsMAAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'none') %>%
-  set_engine("ets")
-etsMAAD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'damped') %>%
-  set_engine("ets")
-etsMAMN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'none') %>%
-  set_engine("ets")
-etsMAMD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'damped') %>%
-  set_engine("ets")
-etsMMNN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'none') %>%
-  set_engine("ets")
-etsMMND <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'damped') %>%
-  set_engine("ets")
-etsMMAN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'none') %>%
-  set_engine("ets")
+#etsMAND <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMAAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'none') %>%
+#  set_engine("ets")
+#etsMAAD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMAMN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'none') %>%
+#  set_engine("ets")
+#etsMAMD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMMNN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'none') %>%
+#  set_engine("ets")
+#etsMMND <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'damped') %>%
+# set_engine("ets")
+# etsMMAN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'none') %>%
+#  set_engine("ets")
 etsMMAD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'damped') %>%
   set_engine("ets")
-etsMMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
-  set_engine("ets")
-etsMMMD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
-  set_engine("ets")
-ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
-    set_engine("ets")
-smooth_etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
-  set_engine("smooth_es")
-smooth_etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
-  set_engine("smooth_es")
+etsMMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'none') %>% set_engine("ets")
+#etsMMMD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+# set_engine("ets")
+#ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
+#    set_engine("ets")
+#smooth_etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+#  set_engine("smooth_es")
+#smooth_etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+#  set_engine("smooth_es")
 smooth_etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
-smooth_etsAAN <- exp_smoothing(error = "additive",trend = "additive",season = "none") %>%
-  set_engine("smooth_es")
-smooth_etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
-  set_engine("smooth_es")
-smooth_etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative") %>%
-  set_engine("smooth_es")
-smooth_etsAMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none") %>%
-  set_engine("smooth_es")
+#smooth_etsAAN <- exp_smoothing(error = "additive",trend = "additive",season = "none") %>%
+#  set_engine("smooth_es")
+#smooth_etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
+#  set_engine("smooth_es")
+#smooth_etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative") %>%
+#  set_engine("smooth_es")
+#smooth_etsAMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none") %>%
+#  set_engine("smooth_es")
 smooth_etsAMA <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive") %>%
   set_engine("smooth_es")
-smooth_etsAMM <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative") %>%
-  set_engine("smooth_es")
+#smooth_etsAMM <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative") %>%
+#  set_engine("smooth_es")
 smooth_etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
   set_engine("smooth_es")
-smooth_etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%set_engine("smooth_es")
-smooth_etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
+#smooth_etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%set_engine("smooth_es")
+#smooth_etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
 smooth_etsMAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none") %>%
   set_engine("smooth_es")
 smooth_etsMAA <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive") %>%
   set_engine("smooth_es")
-smooth_etsMAM <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative") %>%
-  set_engine("smooth_es")
-smooth_etsMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none") %>%
-  set_engine("smooth_es")
-smooth_etsMMA <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive") %>%
-  set_engine("smooth_es")
+#smooth_etsMAM <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative") %>%
+#  set_engine("smooth_es")
+#smooth_etsMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none") %>%
+ # set_engine("smooth_es")
+#smooth_etsMMA <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive") %>%
+#  set_engine("smooth_es")
 smooth_etsMMM <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative") %>%
   set_engine("smooth_es")
-
-smooth_ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
-  set_engine("smooth_es")
+#smooth_ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
+#  set_engine("smooth_es")
 croston <- exp_smoothing() %>%
     set_engine("croston")
 theta <-  exp_smoothing() %>%
@@ -483,39 +481,53 @@ df_resamples <- df %>%
   )
 
 
-recipe_base <- recipe(rate~Time, data=training(df_resamples$splits[[1]]))
+recipe_base_1 <- recipe(rate~Time, data=training(df_resamples$splits[[1]]))
 
-recipe_date_features <- recipe_base %>% 
+recipe_date_features_1 <- recipe_base %>% 
   step_date(Time, features = c('month','year'))
 
-recipe_date_extrafeatures <- recipe_date_features %>% 
+recipe_date_extrafeatures_1 <- recipe_date_features %>% 
   step_date(Time, features = c('quarter','semester'))
        
-recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>% 
+recipe_date_extrafeatures_lag_1 <- recipe_date_extrafeatures %>% 
   step_lag(rate, lag = 1:6) %>% 
   timetk::step_ts_impute(all_numeric(), period=365)
 
-recipe_date_dayfeatures <- recipe_date_extrafeatures_lag  %>% 
+recipe_date_dayfeatures_1 <- recipe_date_extrafeatures_lag  %>% 
   step_date(Time, features = c('doy'))
 
-recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>% 
+recipe_date_extrafeatures_fourier_1<-recipe_date_extrafeatures  %>% 
   timetk::step_fourier(Time, period = 365/12, K = 1)
 
 df_resamples %>%
   timetk::tk_time_series_cv_plan() %>% 
   timetk::plot_time_series_cv_plan(.date_var = Time, .value = rate)
-prophet_light <- boostime::boost_prophet(growth = "linear",
-                                                       changepoint_num = tune(),
-                                                       changepoint_range = tune(),
-                                                       seasonality_yearly = FALSE,
-                                                       seasonality_daily = FALSE,
-                                                       seasonality_weekly = FALSE,
-                                                       season = "multiplicative",
-                                                       trees = 1000,
-                                                       tree_depth = tune(),
-                                                       learn_rate = tune(),
-                                                       mtry = tune()) %>%
-                              set_engine("prophet_lightgbm", verbose = 0)
+#prophet_light <- boostime::boost_prophet(growth = "linear",
+#                                                       changepoint_num = tune(),
+#                                                       changepoint_range = tune(),
+#                                                       seasonality_yearly = FALSE,
+#                                                       seasonality_daily = FALSE,
+#                                                       seasonality_weekly = FALSE,
+#                                                       season = "multiplicative",
+#                                                       trees = 1000,
+#                                                       tree_depth = tune(),
+#                                                       learn_rate = tune(),
+#                                                       mtry = tune()) %>%
+#                              set_engine("prophet_lightgbm", verbose = 0)
+#prophet_light_log <- boostime::boost_prophet(growth = "logistic",
+#                                                       changepoint_num = tune(),
+#                                                       changepoint_range = tune(),
+#                                                       logistic_floor = min(df$rate),
+#                                                       logistic_cap = max(df$rate),
+#                                                       seasonality_yearly = FALSE,
+#                                                       seasonality_daily = FALSE,
+#                                                       seasonality_weekly = FALSE,
+#                                                       season = "multiplicative",
+#                                                       trees = 2000,
+#                                                       tree_depth = tune(),
+#                                                       learn_rate = tune(),
+#                                                       mtry = tune()) %>%
+#                              set_engine("prophet_lightgbm", verbose = 0)
 prophet_catboost <- boostime::boost_prophet(growth = "linear",
                                                        changepoint_num = tune(),
                                                        changepoint_range = tune(),
@@ -528,20 +540,18 @@ prophet_catboost <- boostime::boost_prophet(growth = "linear",
                                                        learn_rate = tune(),
                                                        mtry = tune()) %>%
                                                       set_engine("prophet_catboost", verbose = 0)
-prophet_light_log <- boostime::boost_prophet(growth = "logistic",
+prophet_catboostA <- boostime::boost_prophet(growth = "linear",
                                                        changepoint_num = tune(),
                                                        changepoint_range = tune(),
-                                                       logistic_floor = min(df$rate),
-                                                       logistic_cap = max(df$rate),
                                                        seasonality_yearly = FALSE,
                                                        seasonality_daily = FALSE,
                                                        seasonality_weekly = FALSE,
-                                                       season = "multiplicative",
+                                                       season = "additive",
                                                        trees = 2000,
                                                        tree_depth = tune(),
                                                        learn_rate = tune(),
                                                        mtry = tune()) %>%
-                              set_engine("prophet_lightgbm", verbose = 0)
+                                                      set_engine("prophet_catboost", verbose = 0)
 prophet_catboost_log <- boostime::boost_prophet(growth = "logistic",
                                                        changepoint_num = tune(),
                                                        changepoint_range = tune(),
@@ -551,6 +561,20 @@ prophet_catboost_log <- boostime::boost_prophet(growth = "logistic",
                                                        seasonality_daily = FALSE,
                                                        seasonality_weekly = FALSE,
                                                        season = "multiplicative",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_catboost_logA <- boostime::boost_prophet(growth = "logistic",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       logistic_floor = min(df$rate),
+                                                       logistic_cap = max(df$rate),                                     
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "additive",
                                                        trees = 2000,
                                                        tree_depth = tune(),
                                                        learn_rate = tune(),
@@ -572,6 +596,23 @@ prophet_xgboost_log <- prophet_boost(
     mtry = tune()
   ) %>%
   set_engine("prophet_xgboost", verbose = 0)
+prophet_xgboost_logM <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    season = "multiplicative",
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 2000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
 prophet_xgboost_ <- prophet_boost(
     mode = 'regression',
     changepoint_num = tune(),
@@ -579,8 +620,21 @@ prophet_xgboost_ <- prophet_boost(
     seasonality_yearly = FALSE,
     seasonality_daily = FALSE,
     seasonality_weekly = FALSE,
-    logistic_floor = min(df$rate),
-    logistic_cap = max(df$rate),
+    growth = 'linear',
+    trees = 1000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+prophet_xgboost_ <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    season = "multiplicative",
     growth = 'linear',
     trees = 1000,
     tree_depth = tune(),
@@ -590,56 +644,92 @@ prophet_xgboost_ <- prophet_boost(
   set_engine("prophet_xgboost", verbose = 0)
 ```
 
-#### Lightgbm
+#### Catboost
 
 ```{r, eval= FALSE}
-tune_work_light <- workflow() %>%
+tune_work_cat <- workflow() %>%
     add_model(prophet_catboost_log) %>%
-    add_recipe(recipe_date_extrafeatures_lag)
+    add_recipe(recipe_date_extrafeatures_lag_1)
 
-tune_work1_light<- workflow() %>%
-    add_model(prophet_light) %>%
-    add_recipe(recipe_date_features)
+tune_work1_cat<- workflow() %>%
+    add_model(prophet_catboost_log) %>%
+    add_recipe(recipe_date_features_1 )
 
-tune_work2_light <- workflow() %>%
-    add_model(prophet_light) %>%
-    add_recipe(recipe_date_extrafeatures_fourier)
+tune_work2_cat <- workflow() %>%
+    add_model(prophet_catboost_log) %>%
+    add_recipe(recipe_date_extrafeatures_fourier_1)
 
-tune_results_light <- tune_grid(
-    object     = tune_work_light,
+tune_results_cat <- tune_grid(
+    object     = tune_work_cat,
     resamples  = df_resamples,
-    param_info = parameters(tune_work_light),
+    param_info = parameters(tune_work_cat),
     grid       = 5,
     control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
 )
 
-tune_result1s_light <- tune_grid(
-    object     = tune_work1_light,
+tune_results_cat1 <- tune_grid(
+    object     = tune_work1_cat,
     resamples  = df_resamples,
-    param_info = parameters(tune_work1_light),
+    param_info = parameters(tune_work1_cat),
     grid       = 5,
     control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
 )
 
-tune_result1s2_light <- tune_grid(
-    object     = tune_work2_light,
+tune_results_cat2 <- tune_grid(
+    object     = tune_work2_cat,
     resamples  = df_resamples,
-    param_info = parameters(tune_work2_light),
+    param_info = parameters(tune_work2_cat),
     grid       = 5,
     control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
 )
 
-tuned_best_light_rmse <- tune_results_light %>%
+tuned_best_cat_rmse <- tune_results_cat %>%
     select_best("rmse")
-tuned_best_light_rsq <- tune_results_light %>%
+tuned_best_cat_rsq <- tune_results_cat %>%
+    select_best("rsq")
+tuned_best_cat_rmse1 <- tune_results_cat1 %>%
+    select_best("rmse")
+tuned_best_cat_rsq1 <- tune_results_cat1 %>%
+    select_best("rsq")
+tuned_best_cat_rmse2 <- tune_results_cat2 %>%
+    select_best("rmse")
+tuned_best_cat_rsq2 <- tune_results_cat2 %>%
     select_best("rsq")
 
-fin_wflw <- tune_work_light %>%
+fin_wflw <- tune_work_cat %>%
     finalize_workflow(parameters = tuned_best_light_rmse)
+fin_wflw1 <- tune_work_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq)
+fin_wflw2 <- tune_work1_cat %>%
+    finalize_workflow(parameters = tuned_best_light_rmse)
+fin_wflw3 <- tune_work1_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq)
+fin_wflw4 <- tune_work2_cat %>%
+    finalize_workflow(parameters = tuned_best_light_rmse)
+fin_wflw5 <- tune_work2_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq)
+
 
 wflw_fit <- fin_wflw %>%
+    fit(training(df_resamples$splits[[1]]))
+wflw_fit1 <- fin_wflw1 %>%
     fit(training(df_resamples$splits[[1]])) 
-(modeltime_tbl[2,] <- wflw_fit %>% modeltime_table())
+wflw_fit2 <- fin_wflw2 %>%
+    fit(training(df_resamples$splits[[1]]))
+wflw_fit3 <- fin_wflw3 %>%
+    fit(training(df_resamples$splits[[1]])) 
+wflw_fit4 <- fin_wflw4 %>%
+    fit(training(df_resamples$splits[[1]]))
+wflw_fit5 <- fin_wflw5 %>%
+    fit(training(df_resamples$splits[[1]])) 
+
+
+modeltime_tbl <- wflw_fit %>% modeltime_table()
+modeltime_tbl[2,] <- wflw_fit1 %>% modeltime_table()
+modeltime_tbl[3,] <- wflw_fit2 %>% modeltime_table()
+modeltime_tbl[4,] <- wflw_fit3 %>% modeltime_table()
+modeltime_tbl[5,] <- wflw_fit4 %>% modeltime_table()
+modeltime_tbl[6,] <- wflw_fit5 %>% modeltime_table()
 calibration_tbl <- modeltime_tbl %>% 
                    modeltime_calibrate(
                      testing(df_resamples$splits[[1]])
