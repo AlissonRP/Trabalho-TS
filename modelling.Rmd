@@ -25,6 +25,7 @@ library(tidymodels)
 library(modeltime)
 library(forecast)
 library(sknifedatar)
+library(catboost)
 extract_formula <- function(x) {
   x <- summary(x)
   x_vars <- x$variable[x$role == "predictor"]
@@ -83,75 +84,75 @@ recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>%
 ### Suavização exponencial
 Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores. Sendo ao total 51 modelos testados.
 ```{r, eval = F}
- etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
-     set_engine("ets")
- etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
-     set_engine("ets")
- etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("ets")
- etsAANN <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'none') %>%
-     set_engine("ets")
- etsAAND <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'damped') %>%
-     set_engine("ets")
- etsAAAN <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'none') %>%
-     set_engine("ets")
- etsAAAD <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'damped') %>%
-     set_engine("ets")
- etsAAMN <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'none') %>%
-     set_engine("ets")
- etsAAMD <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'damped') %>%
- set_engine("ets")
- etsAMNN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'none') %>%
-     set_engine("ets")
- etsAMND <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'damped') %>%
-     set_engine("ets")
- etsAMAN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'none') %>%
-     set_engine("ets")
- etsAMAD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'damped') %>%
-     set_engine("ets")
- etsAMMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
-     set_engine("ets")
- etsAMMD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
-     set_engine("ets")
- etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
-   set_engine("ets")
- etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%
-   set_engine("ets")
- etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("ets")
+#etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+#    set_engine("ets")
+#etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+#    set_engine("ets")
+#etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("ets")
+#etsAANN <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAND <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAAAN <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAAD <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAAMN <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAMD <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+#set_engine("ets")
+#etsAMNN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMND <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAMAN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMAD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAMMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMMD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+#    set_engine("ets")
+#etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
+#  set_engine("ets")
+#etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%
+#  set_engine("ets")
+#etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("ets")
 etsMANN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'none') %>%
   set_engine("ets")
- etsMAND <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'damped') %>%
-   set_engine("ets")
- etsMAAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'none') %>%
-   set_engine("ets")
- etsMAAD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'damped') %>%
-   set_engine("ets")
- etsMAMN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'none') %>%
-   set_engine("ets")
- etsMAMD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'damped') %>%
-   set_engine("ets")
- etsMMNN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'none') %>%
-   set_engine("ets")
- etsMMND <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'damped') %>%
-  set_engine("ets")
-  etsMMAN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'none') %>%
-   set_engine("ets")
+#etsMAND <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMAAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'none') %>%
+#  set_engine("ets")
+#etsMAAD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMAMN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'none') %>%
+#  set_engine("ets")
+#etsMAMD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMMNN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'none') %>%
+#  set_engine("ets")
+#etsMMND <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'damped') %>%
+# set_engine("ets")
+# etsMMAN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'none') %>%
+#  set_engine("ets")
 etsMMAD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'damped') %>%
   set_engine("ets")
 etsMMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'none') %>% set_engine("ets")
- etsMMMD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
-  set_engine("ets")
- ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
-     set_engine("ets")
- smooth_etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
-   set_engine("smooth_es")
- smooth_etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
-   set_engine("smooth_es")
+#etsMMMD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+# set_engine("ets")
+#ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
+#    set_engine("ets")
+#smooth_etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+#  set_engine("smooth_es")
+#smooth_etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+#  set_engine("smooth_es")
 smooth_etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
- smooth_etsAAN <- exp_smoothing(error = "additive",trend = "additive",season = "none") %>%
-   set_engine("smooth_es")
- smooth_etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
-   set_engine("smooth_es")
- smooth_etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative") %>%
+#smooth_etsAAN <- exp_smoothing(error = "additive",trend = "additive",season = "none") %>%
+#  set_engine("smooth_es")
+#smooth_etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
+#  set_engine("smooth_es")
+#smooth_etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative") %>%
 #  set_engine("smooth_es")
 #smooth_etsAMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none") %>%
 #  set_engine("smooth_es")
@@ -186,6 +187,8 @@ theta <-  exp_smoothing() %>%
 ### Ajustando os modelos
 Para os modelos de suavização exponencial iremos os escolher pelo menos um modelo que seja o melhor em cada uma dessas categorias: Erro Aditivo, Erro Multiplicativo, Sem Tendência, Tendência Aditiva, Tendência Multiplicativa, Tendência Amortecida, Sem Sazonalidade, Sazonalidade Aditiva, Sazonalidade Multiplicativa e bom R².
 ```{r, eval = FALSE}
+
+```{r, eval = FALSE}
 model_work2 <- workflow_set(
   preproc = list(
     base                  = recipe_base,
@@ -196,55 +199,54 @@ model_work2 <- workflow_set(
     extrafeatures_fourier = recipe_date_extrafeatures_fourier
   ),
   models  = list(
-    M_croston           = croston,
-    M_theta             = theta,
-      #M_etsauto           = ets_auto,
-      #M_smooth            = smooth_ets_auto,
-      M_etsANN = etsANN,
-      M_etsANA = etsANA,
-     M_etsANM = etsANM,
-      M_etsAANN = etsAANN,
-      M_etsAAND = etsAAND,
-      M_etsAAAN = etsAAAN,
-      M_etsAAAD = etsAAAD,
-     M_etsAAMN = etsAAMN,
-     M_etsAAMD = etsAAMD,
-     M_etsAMNN = etsAMNN,
-     M_etsAMND = etsAMND,
-     M_etsAMAN = etsAMAN,
-     M_etsAMAD = etsAMAD,
-     M_etsAMMN = etsAMMN,
-     M_etsAMMD = etsAMMD,
-     M_etsMNN = etsMNN,
-     M_etsMNA = etsMNA,
-      M_etsMNM = etsMNM,
+        ##M_etsauto           = ets_auto,
+    ##M_smooth            = smooth_ets_auto,
+    ##M_etsANN = etsANN,
+    ##M_etsANA = etsANA,
+    #M_etsANM = etsANM,
+    ##M_etsAANN = etsAANN,
+    ##M_etsAAND = etsAAND,
+    ##M_etsAAAN = etsAAAN,
+    ##M_etsAAAD = etsAAAD,
+    #M_etsAAMN = etsAAMN,
+    #M_etsAAMD = etsAAMD,
+    #M_etsAMNN = etsAMNN,
+    #M_etsAMND = etsAMND,
+    #M_etsAMAN = etsAMAN,
+    #M_etsAMAD = etsAMAD,
+    #M_etsAMMN = etsAMMN,
+    #M_etsAMMD = etsAMMD,
+    #M_etsMNN = etsMNN,
+    #M_etsMNA = etsMNA,
+    ##M_etsMNM = etsMNM,
     M_etsMANN = etsMANN,
-      M_etsMAND = etsMAND,
-      M_etsMAAN = etsMAAN,
-      M_etsMAAD = etsMAAD,
-      M_etsMAMN = etsMAMN,
-      M_etsMAMD = etsMAMD,
-      M_etsMMNN = etsMANN,
-      M_etsMMND = etsMMND,
-     M_etsMMAN = etsMMAN,
+    ##M_etsMAND = etsMAND,
+    ##M_etsMAAN = etsMAAN,
+    ##M_etsMAAD = etsMAAD,
+    ##M_etsMAMN = etsMAMN,
+    ##M_etsMAMD = etsMAMD,
+    ##M_etsMMNN = etsMANN,
+    ##M_etsMMND = etsMMND,
+    #M_etsMMAN = etsMMAN,
     M_etsMMAD = etsMMAD,
     M_etsMMMN = etsMMMN,
-     M_etsMMMD = etsMMMD,
-      M_smooth_etsANN = smooth_etsANN,
-      M_smooth_etsANA = smooth_etsANA,
+    #M_etsMMMD = etsMMMD,
+    ##M_smooth_etsANN = smooth_etsANN,
+    ##M_smooth_etsANA = smooth_etsANA,
+    ##M_smooth_etsANA = smooth_etsANA,
     M_smooth_etsANM = smooth_etsANM,
-      M_smooth_etsAAN = smooth_etsAAN,
+    ##M_smooth_etsAAN = smooth_etsAAN,
     ##M_smooth_etsAAA = smooth_etsAAA,
-    ##M_smooth_etsAAM = smooth_etsAAM,
-    ##M_smooth_etsAMN = smooth_etsAMN,
-    M_smooth_etsAMA = smooth_etsAMA,
     ##M_smooth_etsAMM = smooth_etsAMM,
     M_smooth_etsMNN = smooth_etsMNN,
     #M_smooth_etsMNA = smooth_etsMNA,
+    M_smooth_etsMNM = smooth_etsMNM,
     #M_smooth_etsMNM = smooth_etsMNM,
     M_smooth_etsMAN = smooth_etsMAN,
     M_smooth_etsMAA = smooth_etsMAA,
     ##M_smooth_etsMAM = smooth_etsMAM,
+    M_smooth_etsMMN = smooth_etsMMN,
+    M_smooth_etsMMA = smooth_etsMMA,
     ##M_smooth_etsMMN = smooth_etsMMN,
     ##M_smooth_etsMMA = smooth_etsMMA,
     M_smooth_etsMMM = smooth_etsMMM
