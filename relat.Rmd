@@ -4,7 +4,7 @@ author: "Alisson Rosa e Vítor Pereira"
 abstract: "One Piece > Naruto"
 header-includes:
    - \usepackage[brazil]{babel}
-   - \usepackage{bm}
+   - \usepackage{bm,placeins}
 geometry: left=1.7cm, right=1.7cm, top=2.5cm, bottom=2.2cm
 output:
   bookdown::pdf_document2:
@@ -25,14 +25,16 @@ link-citations: true
 options(digits = 3) # Arrendodamento
 ggplot2::theme_set(ggplot2::theme_minimal()) # Tema dos gráficos produzidos no ggplot2
 knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.7)
-# devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
-
+#devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
+#devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+#devtools::install_github("AlbertoAlmuinha/boostime")
 library(tidyverse)
 library(tidymodels)
 library(modeltime)
 library(forecast)
-# library(workflowsets)
-# library(sknifedatar)
+library(sknifedatar)
+library(catboost)
+library(patchwork)
 ```
 
 ```{r functions}
@@ -256,13 +258,497 @@ Dickey-Fuller Aumentado, Phillips-Perron, KPSS, com índice de significância de
 Vimos visualmente que a série a partir de um certo começa ter uma descrescimento, assim portanto dando um vislumbre de tendência determinística, aplicando os testes obtemos mais uma evidência de existência de tendência na série. Em relação a sazonalidade os testes também confirmaram o que os gráficos mostraram: não existe evidência de sazonalidade na série.
 
 # Modelagem
+Nesta seção trabalharemos com os modelos para a série temporal, realizando a análise de métricas (MAE, MAPE, MASE, SMAPE, RMSE e RSQ), análise de resíduos e realizando previsões.
+
+## Dados de treino e teste
+Utilizaremos para treinar os nossos modelos uma proporção de 80%, como temos uma amostra grande, os 20% são suficientes para os dados de teste, assim a série ficará da seguinte maneira:
+
+```{r}
+splits <- initial_time_split(df, prop=0.8)
+df_train=training(splits)
+df_test=testing(splits)
+initial_time_split(df, prop = 0.8) %>%
+  timetk::tk_time_series_cv_plan() %>%
+  timetk::plot_time_series_cv_plan(as.Date(Time), rate, .interactive = FALSE,
+                           .title = "Avaliação de Naruto Shippuden Dados de Treino e Teste") +
+  theme(strip.text = element_blank())
+```
+
+## Recipes
+Utilizaremos 6 recipes (receitas): normal, mês e ano como covariáveis, dia do ano como covariável, trimestre e semestre, utilizando lags e utilizando séries de Fourier.
+```{r}
+recipe_base <- recipe(rate~Time, data=df)
+
+recipe_date_features <- recipe_base %>% 
+  step_date(Time, features = c('month','year'))
+
+recipe_date_dayfeatures <- recipe_base %>% 
+  step_date(Time, features = c('doy'))
+
+recipe_date_extrafeatures <- recipe_date_features %>% 
+  step_date(Time, features = c('quarter','semester'))
+       
+recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>% 
+  step_lag(rate, lag = 1:6) %>% 
+  timetk::step_ts_impute(all_numeric(), period=365)
+  
+recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>% 
+  timetk::step_fourier(Time, period = 365/12, K = 1)
+```
+
+## Utilizando o Pacote Modeltime
+
+Aqui iremos testar diversos modelos como: suavização exponencial (ets), suavização exponencial no modelo de espaço de estado SSOE, suavização exponencial theta (equivalente a suavização exponencial simples com tendencia constante (drift)  e o procedimento Prophet do Facebook, é um modelo aditivo utilizando tendências não lineares, para entender mais o modelo Prophet [\textcolor{blue}{clique aqui.}](https://facebook.github.io/prophet/)
+
+### Suavização exponencial
+Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores. Sendo ao total 51 modelos testados.
+
+#### Ajustando os modelos
+Para os modelos de suavização exponencial iremos os escolher pelo menos um modelo que seja o melhor em cada uma dessas categorias: Erro Aditivo, Erro Multiplicativo, Sem Tendência, Tendência Aditiva, Tendência Multiplicativa, Tendência Amortecida, Sem Sazonalidade, Sazonalidade Aditiva, Sazonalidade Multiplicativa e bom R².
+
+Já no ajuste de modelos podemos perceber que a suavização exponencial não pude utilizar de algumas combinações de erro, tendencia e sazonalidade, esses são modelos são: ets(A,N,M), ets(A,A,M), ets(A,AD,M), ets(A,M,N), ets(A,MD,N), ets(A,M,A), ets(A,MD,A), ets(A,M,M), ets(A,MD,M), ets(M,M,A) e ets(M,MD,A). Assim, temos que entre os modelos válidos, escolhendo a melhor combinação de recipe e modelos, temos as seguintes métricas para cada modelo: (ordenados pela métrica MAE)
+
+\FloatBarrier
+\begin{table}[H]
+
+\caption{Métricas dos Modelos de Suavização Exponencia}
+\centering
+\begin{tabular}[t]{c|c|c|c|c|c|c|c}
+\hline
+rank & .model\_desc & mae & mape & mase & smape & rmse & rsq\\
+\hline
+1 & ETSX(MAN) & 0.9482563 & 13.76290 & 2.063239 & 13.52065 & 1.107536 & 0.1541240\\
+\hline
+3 & ETS(MAN) & 0.9503808 & 13.83595 & 2.067861 & 13.53914 & 1.107940 & 0.1541242\\
+\hline
+4 & ETS(M,A,N) & 0.9506912 & 13.84659 & 2.068537 & 13.54501 & 1.107840 & 0.1541242\\
+\hline
+10 & ETS(MAA) & 0.9588516 & 13.84171 & 2.086293 & 13.66376 & 1.123567 & 0.1329984\\
+\hline
+11 & ETSX(MAA) & 0.9598439 & 13.87724 & 2.088452 & 13.67609 & 1.123165 & 0.1331725\\
+\hline
+13 & CROSTON METHOD & 1.0566146 & 15.54127 & 2.299008 & 15.09949 & 1.204980 & NA\\
+\hline
+19 & ETSX(MMM) & 1.0910167 & 14.79220 & 2.373861 & 15.57832 & 1.300304 & 0.0827720\\
+\hline
+21 & ETS(MMM) & 1.1242293 & 15.11030 & 2.446125 & 16.07203 & 1.344843 & 0.0703107\\
+\hline
+22 & ETS(M,M,M) & 1.1572583 & 15.51976 & 2.517991 & 16.57406 & 1.377681 & 0.0310785\\
+\hline
+28 & ETSX(ANM) & 1.1764872 & 16.02217 & 2.559829 & 16.87385 & 1.364653 & 0.0076139\\
+\hline
+29 & ETSX(MNN) & 1.2462616 & 16.49726 & 2.711646 & 17.94631 & 1.480544 & 0.1541241\\
+\hline
+31 & ETS(M,N,N) & 1.2529108 & 16.54194 & 2.726114 & 18.05000 & 1.493865 & NA\\
+\hline
+37 & ETS(MNN) & 1.2529333 & 16.54211 & 2.726163 & 18.05036 & 1.493907 & NA\\
+\hline
+39 & ETS(M,MD,N) & 1.2538124 & 16.55009 & 2.728075 & 18.06417 & 1.495339 & 0.0849640\\
+\hline
+45 & ETS(M,AD,N) & 1.2566748 & 16.58070 & 2.734303 & 18.10941 & 1.499276 & 0.1351984\\
+\hline
+51 & ETSX(ANA) & 1.2572438 & 16.66570 & 2.735541 & 18.12533 & 1.493752 & 0.0080862\\
+\hline
+52 & ETSX(ANN) & 1.2597240 & 16.59663 & 2.740938 & 18.15692 & 1.506055 & 0.1541242\\
+\hline
+53 & ETS(M,N,A) & 1.2616011 & 16.66740 & 2.745022 & 18.19174 & 1.503203 & 0.0047931\\
+\hline
+59 & ETS(M,MD,M) & 1.2622415 & 16.68977 & 2.746415 & 18.20149 & 1.501747 & 0.0119256\\
+\hline
+65 & ETS(ANM) & 1.2647154 & 16.70804 & 2.751798 & 18.24044 & 1.507543 & 0.0092757\\
+\hline
+66 & ETS(ANA) & 1.2664086 & 16.73464 & 2.755482 & 18.26878 & 1.509865 & 0.0090474\\
+\hline
+68 & ETS(M,AD,M) & 1.2692679 & 16.74742 & 2.761704 & 18.31245 & 1.513117 & 0.0100718\\
+\hline
+74 & ETS(M,A,M) & 1.2695095 & 16.76412 & 2.762229 & 18.31714 & 1.513554 & 0.0140288\\
+\hline
+80 & ETS(A,AD,A) & 1.2720614 & 16.77874 & 2.767782 & 18.35787 & 1.519923 & 0.0101815\\
+\hline
+87 & ETS(A,N,N) & 1.2764738 & 16.74424 & 2.777383 & 18.42147 & 1.534184 & NA\\
+\hline
+93 & ETS(ANN) & 1.2766417 & 16.74570 & 2.777748 & 18.42413 & 1.534473 & NA\\
+\hline
+94 & ETS(A,AD,N) & 1.2767148 & 16.74648 & 2.777907 & 18.42529 & 1.534574 & 0.0624370\\
+\hline
+100 & ETS(A,N,A) & 1.2785790 & 16.84264 & 2.781963 & 18.46063 & 1.530631 & 0.0125995\\
+\hline
+106 & ETS(M,N,M) & 1.2830405 & 16.90115 & 2.791671 & 18.53364 & 1.535727 & 0.0112603\\
+\hline
+112 & THETA METHOD & 1.2846034 & 16.83626 & 2.795071 & 18.55142 & 1.544815 & 0.1541242\\
+\hline
+118 & ETS(M,A,A) & 1.2913573 & 17.00737 & 2.809766 & 18.66618 & 1.541874 & 0.0222350\\
+\hline
+124 & ETS(M,AD,A) & 1.3483684 & 17.57995 & 2.933813 & 19.58484 & 1.626831 & 0.0582191\\
+\hline
+130 & ETS(A,A,N) & 1.4355075 & 18.59210 & 3.123412 & 21.03802 & 1.742123 & 0.1541242\\
+\hline
+136 & ETSX(AAN) & 1.4418638 & 18.66746 & 3.137242 & 21.14579 & 1.750517 & 0.1541242\\
+\hline
+137 & ETS(AAN) & 1.4423830 & 18.67268 & 3.138372 & 21.15451 & 1.751335 & 0.1541242\\
+\hline
+138 & ETS(A,A,A) & 1.4551112 & 18.85483 & 3.166066 & 21.37075 & 1.766832 & 0.1171396\\
+\hline
+145 & ETS(AMA) & 1.7832282 & 22.88661 & 3.879991 & 27.25304 & 2.187881 & 0.1628969\\
+\hline
+146 & ETSX(AMA) & 1.8083857 & 23.20880 & 3.934729 & 27.73209 & 2.219819 & 0.1624729\\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Assim os modelos escolhidos foram: 
+  -   ETSX(M,A,N) - melhor modelo
+  -   ETS(M,A,N) - melhor modelo da suavização exponencial normal
+  -   Croston - Bom método num geral e é de engine diferente
+  -   Theta - Bom R² e é de engine diferente
+  -   ETSX(M,A,A) - Melhor modelo com sazonalidade aditiva
+  -   ETSX(M,M,M) - Melhor modelo com sazonalide multiplicativa
+  -   ETSX(A,N,M) - Melhor modelo com erro aditivo e sem tendencia
+  -   ETS(M,M,M) - Segundo melhor modelo da suavização exponencial normal 
+  -   ETS(M, MD, N) - Melhor modelo com tendencia amortecida
+  -   ETSX(M,N,N) - Modelo equilibrado em todas as medidas e com bom R² entre os ETS()
+  -   ETSX(A,M,A) - Modelo com melhor R²
+  
+### Modelos Prophet
+
+Para a seleção dos modelos prophet realizamos o procedimento de tunnar hiperparâmetros considerando duas características, sazonalidade, poderia aditiva ou multiplicativa, crescimento, poderia linear ou logístico, assim como utilizamos duas engines para tunnar os hiperparâmetros: XGBoost e Catboost.
+
+Assim utilizaremos 4 modelos Prophets para o ajuste de modelos e comparação com os modelos de suavização exponencial:
+  -   Prophet com todos hiperparâmetros padrões e engine xgboost;
+  -   Prophet com crescimento logístico, changepoint_range 0.8, restante de hiperparâmetros padrões e engine xgboost;
+  -   Prophet com crescimento logístico, changepoint_range 0.8628, changepoint_num 33, trees 2000, tree_depth 2, learn_rate 0.000975, mtry 7 e engine xgboost;
+  -   Prophet com crescimento linear, changepoint_range 0.7323, changepoint_num 29, trees 2000, tree_depth 4, learn_rate 0.00335856, mtry 9 e engine catboost;
+
+
+### Ajustando os modelos
+
+```{r}
+prophet_boost <- prophet_boost(mode = 'regression') %>% 
+  set_engine("prophet_xgboost")
+prophet_boost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_range = 0.8,
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic'
+  ) %>%
+  set_engine("prophet_xgboost")
+prophet_catboostAF <- boostime::boost_prophet(growth = "linear",
+                                                       changepoint_num = 29,
+                                                       changepoint_range = 0.7323078,
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "additive",
+                                                       trees = 2000,
+                                                       tree_depth = 4,
+                                                       learn_rate = 0.00335856,
+                                                       mtry = 9) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_xgboost_logMF <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = 33,
+    changepoint_range = 0.8628352,
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    season = "multiplicative",
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 2000,
+    tree_depth = 2,
+    learn_rate = 0.0009750737,
+    mtry = 7
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+etsMANN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'none') %>%
+  set_engine("ets")
+etsMMAD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'damped') %>%
+  set_engine("ets")
+etsMMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'none') %>% set_engine("ets")
+smooth_etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
+smooth_etsAMA <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive") %>%
+  set_engine("smooth_es")
+smooth_etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
+  set_engine("smooth_es")
+smooth_etsMAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none") %>%
+  set_engine("smooth_es")
+smooth_etsMAA <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive") %>%
+  set_engine("smooth_es")
+smooth_etsMMM <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative") %>%
+  set_engine("smooth_es")
+croston <- exp_smoothing() %>%
+    set_engine("croston")
+theta <-  exp_smoothing() %>%
+    set_engine("theta")
+```
+
+```{r}
+model_work1 <- workflow_set(
+  preproc = list(
+    base                  = recipe_base,
+    features              = recipe_date_features, 
+    features_day          = recipe_date_dayfeatures,
+    extrafeatures         = recipe_date_extrafeatures,
+    extrafeatures_lag     = recipe_date_extrafeatures_lag,
+    extrafeatures_fourier = recipe_date_extrafeatures_fourier
+  ),
+  models  = list(
+    M_croston           = croston,
+    M_theta             = theta,
+    M_etsMANN = etsMANN,
+    M_etsMMAD = etsMMAD,
+    M_etsMMMN = etsMMMN,
+    M_smooth_etsANM = smooth_etsANM,
+    M_smooth_etsAMA = smooth_etsAMA,
+    M_smooth_etsMNN = smooth_etsMNN,
+    M_smooth_etsMAN = smooth_etsMAN,
+    M_smooth_etsMAA = smooth_etsMAA,
+    M_smooth_etsMMM = smooth_etsMMM,
+    M_prophet_boost_log = prophet_boost_log, 
+    M_prophet_boost     = prophet_boost,
+    M_prophet_boost_logM = prophet_xgboost_logMF,
+    M_prophet_catboostA = prophet_catboostAF
+  ),
+  cross   = TRUE
+)
+
+model_fit1 <- modeltime_wfs_fit(.wfsets = model_work1, 
+                            .split_prop = 0.8, 
+                            .serie=df)
+model_fit1 <- model_fit1 %>% mutate(.model_desc = case_when(str_detect(model_fit1$.model_id,"catboostA") == TRUE ~ "PROPHET CATBOOST",str_detect(model_fit1$.model_id,"prophet_boost_logM") == TRUE ~ "PROPHET XGBOOST TUNNADO", str_detect(model_fit1$.model_id,"prophet_boost_log") == TRUE ~ "PROPHET XGBOOST", str_detect(model_fit1$.model_id,"prophet_boost") == TRUE ~ "PROPHET XGBOOST DEFAULT", TRUE ~ .model_desc))
+```
+Com os modelos ajustados, agora podemos ver quais são os 20 modelos possuem as melhores métricas, ordenados de acordo com o rmse:
+```{r}
+model_metrics1 <- modeltime_wfs_rank(model_fit1,
+                              rank_metric = "rmse")
+model_metrics1 <- model_metrics1 %>% mutate(.model_desc = case_when(str_detect(model_metrics1$.model_id,"catboostA") == TRUE ~ "PROPHET CATBOOST",str_detect(model_metrics1$.model_id,"prophet_boost_logM") == TRUE ~ "PROPHET XGBOOST TUNNADO", str_detect(model_metrics1$.model_id,"prophet_boost_log") == TRUE ~ "PROPHET XGBOOST", str_detect(model_metrics1$.model_id,"prophet_boost") == TRUE ~ "PROPHET XGBOOST DEFAULT", TRUE ~ .model_desc))
+model_metrics1[1:20,] %>%
+  select(-`.fit_model`) %>%
+  mypdf1::pdf1_tbl("Métricas nos dados de teste")
+```
+Assim temos também que as métricas no dados de treino são:
+```{r}
+for(i in 1:20){
+  if(i==1){
+    my_m1 <- my_metrics(df,
+                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".actual"]],
+                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".fitted"]])
+    my_m1 <- my_m1 %>% select(-.estimator)
+    names(my_m1) <- c("Métricas", model_metrics1$.model_desc[[i]])
+    Metricas <- unlist(my_m1 %>% select(Métricas))
+    my_m1 <- my_m1 %>%
+      select(-Métricas) %>%
+      t() %>%
+      as.data.frame()
+    names(my_m1) <- str_to_upper(Metricas)
+    my_m1 <- my_m1 %>% mutate(Modelo = rownames(my_m1))
+  }else{
+    my_m2 <- my_metrics(df,
+                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".actual"]],
+                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".fitted"]])
+    my_m2 <- my_m2 %>% select(-.estimator)
+    names(my_m2) <- c("Métricas", model_metrics1$.model_desc[[i]])
+    Metricas <- unlist(my_m2 %>% select(Métricas))
+    my_m2 <- my_m2 %>%
+      select(-Métricas) %>%
+      t() %>%
+      as.data.frame()
+    my_m2 <- my_m2 %>% mutate(Modelo = rownames(my_m2))
+    my_m1[nrow(my_m1) + 1, ] <- my_m2
+  }
+}
+rownames(my_m1) <- 1:20
+
+
+my_m1%>%
+  select(Modelo, 1:6) %>%
+  mypdf1::pdf1_tbl("Métricas nos dados de treino")
+```
+
+
+#### Gráficos
+Nesta seção será mostrado alguns gráficos interessantes dos seguintes modelos: Prophet's, ETSX(MAN), ETS(MAN) do smooth, ETS(MAN) do forecast e ETS(MAA) do smooth.
+
+##### Prophet 
+
+```{r}
+model_metrics1$`.fit_model`[[1]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com Catboost", .interactive = FALSE
+     ) + 
+  model_metrics1$`.fit_model`[[2]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost tunnado", .interactive = FALSE
+     ) + 
+  model_metrics1$`.fit_model`[[3]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost", .interactive = FALSE
+     )+ 
+  model_metrics1$`.fit_model`[[4]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost default", .interactive = FALSE
+     )
+```
+
+##### Suavização Exponencial
+
+```{r}
+model_metrics1$`.fit_model`[[5]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETSX(M,A,N)", .interactive = FALSE
+     ) + 
+  model_metrics1$`.fit_model`[[6]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETS(M,A,N)", .interactive = FALSE
+     ) + 
+  model_metrics1$`.fit_model`[[13]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETS(M,A,N) do pacote smooth", .interactive = FALSE
+     )+ 
+  model_metrics1$`.fit_model`[[15]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETSX(M,A,A)", .interactive = FALSE
+     )
+```
+
+
+### Reajuste do modelo
+Agora iremos reajustar o modelo utilizando não apenas os dados de treino, mas toda a base de dados.
+```{r}
+model_refit <- modeltime_wfs_refit(.wfs_results = model_metrics1, .serie = df)
+```
+Para começar a análise dos modelos reajustados temos, as seguintes métricas para os dados completos:
+
+```{r}
+model_refit <- model_refit %>% mutate(.model_desc = case_when(str_detect(model_refit$.model_id,"catboostA") == TRUE ~ "PROPHET CATBOOST",str_detect(model_refit$.model_id,"prophet_boost_logM") == TRUE ~ "PROPHET XGBOOST TUNNADO", str_detect(model_refit$.model_id,"prophet_boost_log") == TRUE ~ "PROPHET XGBOOST", str_detect(model_refit$.model_id,"prophet_boost") == TRUE ~ "PROPHET XGBOOST DEFAULT", TRUE ~ .model_desc))
+
+for(i in 1:nrow(model_refit)){
+  if(i==1){
+    my_m1 <- my_metrics(df,
+                        model_refit$.model[[i]][["fit"]][["fit"]][["fit"]][["data"]][[".actual"]],
+                        model_refit$.model[[i]][["fit"]][["fit"]][["fit"]][["data"]][[".fitted"]])
+    my_m1 <- my_m1 %>% select(-`.estimator`)
+    names(my_m1) <- c("Métricas", model_refit$.model_desc[[i]])
+    Metricas <- unlist(my_m1 %>% select(Métricas))
+    my_m1 <- my_m1 %>%
+      select(-Métricas) %>%
+      t() %>%
+      as.data.frame()
+    names(my_m1) <- str_to_upper(Metricas)
+    my_m1 <- my_m1 %>% mutate(Modelo = rownames(my_m1))
+  }else{
+    my_m2 <- my_metrics(df,
+                        model_refit$.model[[i]][["fit"]][["fit"]][["fit"]][["data"]][[".actual"]],
+                        model_refit$.model[[i]][["fit"]][["fit"]][["fit"]][["data"]][[".fitted"]])
+    my_m2 <- my_m2 %>% select(-`.estimator`)
+    names(my_m2) <- c("Métricas", model_refit$.model_desc[[i]])
+    Metricas <- unlist(my_m2 %>% select(Métricas))
+    my_m2 <- my_m2 %>%
+      select(-Métricas) %>%
+      t() %>%
+      as.data.frame()
+    my_m2 <- my_m2 %>% mutate(Modelo = rownames(my_m2))
+    my_m1[nrow(my_m1) + 1, ] <- my_m2
+  }
+}
+rownames(my_m1) <- 1:nrow(model_refit)
+```
+
+
+```{r}
+my_m1%>%
+  select(Modelo, 1:6) %>%
+  .[1:20,] %>%
+  mypdf1::pdf1_tbl("Métricas na série inteira")
+```
+
+### Análise de resíduo
+
+```{r}
+for(i in 1:nrow(model_refit)){
+  if(i == 1){
+  residuos <- model_refit$`.model`[[i]] %>%
+  modeltime_calibrate(new_data = df) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }else{
+    residuos[nrow(residuos) +1, ] <- model_refit$`.model`[[i]] %>%
+  modeltime_calibrate(new_data = df) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }
+}
+```
+
+
+```{r}
+residuos %>% mutate(.model_desc = model_fit1$.model_desc) %>% filter(ljung_box >0.05)
+```
+Então apenas 7 dos nosso modelos passaram nos testes de Shapiro-Wilk, Box-Pierce e Ljung-Box: ETS(A,M,A), ETS(A,N,M), THETA, PROPHET XGBOOST DEFAULT, PROPHET XGBOOST, ETSX(A,M,A) e ETSX(A,N,M). Desses nossos 7 modelos apenas 2 apresentaram boas métricas: PROPHET XGBOOST DEFAULT e PROPHET XGBOOST. Então esses seriam os modelos indicados para a predição e previsão da Série Temporal.
+
+#### Gráficos
+
+```{r}
+  model_metrics1$`.fit_model`[[3]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost reajustada", .interactive = FALSE
+     )+ model_refit$.model[[25]] %>% modeltime_table()%>%
+    modeltime_forecast(
+        new_data    = df_test,
+        actual_data = df
+    ) %>%
+    plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost reajustada nos dados de teste", .interactive = FALSE)+
+  model_metrics1$`.fit_model`[[4]]$.model[[1]] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost default reajustada", .interactive = FALSE
+     ) + model_refit$.model[[26]] %>% modeltime_table()%>%
+    modeltime_forecast(
+        new_data    = df_test,
+        actual_data = df
+    ) %>%
+    plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost default reajustada nos dados de teste", .interactive = FALSE
+    )
+```
 
 
 
+## Utilizando outros Pacotes
+Nesta seção iremos construir a modelagem de séries temporais utilizando outros pacotes além do modeltime, como o pacote forecast, smooth e SMA principalmente para construção de modelos holt, médias móveis e regressão LOESS.
 
-
-
-## Médias Móveis Simples
+### Médias Móveis Simples
 
 
 ```{r}
@@ -289,8 +775,8 @@ df1 %>%
   )
 ```
 
-### Previsão
-Utilizando o pacote smooth.
+#### Previsão
+Utilizando o pacote smooth, temos a seguinte previsão
 
 ```{r, results = F, fig.show='hide'}
 mms1 <- smooth::sma(df$rate[1:400], order = 21, silent = FALSE, interval = "p", h = 100)
@@ -312,15 +798,8 @@ ggplot() +
   geom_vline(xintercept = max(df1$numero_episodio))
 ```
 
-```{r}
-ggplot() +
-  geom_ribbon(data = ICbands, aes(x = n, ymin = lower, ymax = upper), fill = "grey70") +
-  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
-  geom_line(data = fit_forecast, aes(x = n, y = forecast, colour = "Forecast")) +
-  geom_vline(xintercept = max(df1$numero_episodio))
-```
 
-## Regressão LOESS
+### Regressão LOESS
 
 ```{r, results = F}
 op1 <- optim(par = c(0.5), fn = calcSSE, method = "SANN", data = df1, regressor = "rate", time = "Time")
@@ -347,14 +826,7 @@ df1 %>%
   )
 ```
 
-## Suavização Exponencial
-
-
-
-
-### Com outros pacotes
-
-```{r}
+```{r, results = F, fig.show='hide'}
 dfts <- msts(df %>% select(rate, numero_episodio), seasonal.periods = 365 / 7, start = c(2007, 2.5))
 treino <- df[1:400, ]
 treino <- window(dfts[, 1], end = c(2014, 38))
@@ -365,7 +837,7 @@ h2 <- holt(treino, damped = TRUE, h = 100)
 
 HoltWinters(treino, seasonal = "multiplicative") # Não consegui utilizar voltou o erro de frequência
 ```
-#### Holt não Amortecido
+### Holt não Amortecido
 
 ```{r}
 forecast_h1 <- data.frame(forecast = c(h1$fitted, h1$mean), n = 1:length(c(h1$fitted, h1$mean)))
@@ -383,7 +855,7 @@ ggplot() +
 ```
 
 
-#### Holt com Amortecimento
+### Holt com Amortecimento
 
 ```{r}
 forecast_h2 <- data.frame(forecast = c(h2$fitted, h2$mean), n = 1:length(c(h2$fitted, h2$mean)))
@@ -404,7 +876,7 @@ ggplot() +
 
 
 
-## Calculando Métricas de Acurácia dos Modelos não-ModelTime
+### Calculando Métricas de Acurácia dos Modelos não-ModelTime
 
 ```{r}
 true_values1 <- df %>%
