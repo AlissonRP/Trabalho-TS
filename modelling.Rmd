@@ -83,75 +83,75 @@ recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>%
 ### Suavização exponencial
 Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores. Sendo ao total 51 modelos testados.
 ```{r, eval = F}
-#etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
-#    set_engine("ets")
-#etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
-#    set_engine("ets")
-#etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("ets")
-#etsAANN <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'none') %>%
-#    set_engine("ets")
-#etsAAND <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'damped') %>%
-#    set_engine("ets")
-#etsAAAN <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'none') %>%
-#    set_engine("ets")
-#etsAAAD <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'damped') %>%
-#    set_engine("ets")
-#etsAAMN <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'none') %>%
-#    set_engine("ets")
-#etsAAMD <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'damped') %>%
-#set_engine("ets")
-#etsAMNN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'none') %>%
-#    set_engine("ets")
-#etsAMND <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'damped') %>%
-#    set_engine("ets")
-#etsAMAN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'none') %>%
-#    set_engine("ets")
-#etsAMAD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'damped') %>%
-#    set_engine("ets")
-#etsAMMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
-#    set_engine("ets")
-#etsAMMD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
-#    set_engine("ets")
-#etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
-#  set_engine("ets")
-#etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%
-#  set_engine("ets")
-#etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("ets")
+ etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+     set_engine("ets")
+ etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+     set_engine("ets")
+ etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("ets")
+ etsAANN <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'none') %>%
+     set_engine("ets")
+ etsAAND <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'damped') %>%
+     set_engine("ets")
+ etsAAAN <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'none') %>%
+     set_engine("ets")
+ etsAAAD <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'damped') %>%
+     set_engine("ets")
+ etsAAMN <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'none') %>%
+     set_engine("ets")
+ etsAAMD <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+ set_engine("ets")
+ etsAMNN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'none') %>%
+     set_engine("ets")
+ etsAMND <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'damped') %>%
+     set_engine("ets")
+ etsAMAN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'none') %>%
+     set_engine("ets")
+ etsAMAD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'damped') %>%
+     set_engine("ets")
+ etsAMMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
+     set_engine("ets")
+ etsAMMD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+     set_engine("ets")
+ etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
+   set_engine("ets")
+ etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%
+   set_engine("ets")
+ etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("ets")
 etsMANN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'none') %>%
   set_engine("ets")
-#etsMAND <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'damped') %>%
-#  set_engine("ets")
-#etsMAAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'none') %>%
-#  set_engine("ets")
-#etsMAAD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'damped') %>%
-#  set_engine("ets")
-#etsMAMN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'none') %>%
-#  set_engine("ets")
-#etsMAMD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'damped') %>%
-#  set_engine("ets")
-#etsMMNN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'none') %>%
-#  set_engine("ets")
-#etsMMND <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'damped') %>%
-# set_engine("ets")
-# etsMMAN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'none') %>%
-#  set_engine("ets")
+ etsMAND <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'damped') %>%
+   set_engine("ets")
+ etsMAAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'none') %>%
+   set_engine("ets")
+ etsMAAD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'damped') %>%
+   set_engine("ets")
+ etsMAMN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'none') %>%
+   set_engine("ets")
+ etsMAMD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+   set_engine("ets")
+ etsMMNN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'none') %>%
+   set_engine("ets")
+ etsMMND <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'damped') %>%
+  set_engine("ets")
+  etsMMAN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'none') %>%
+   set_engine("ets")
 etsMMAD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'damped') %>%
   set_engine("ets")
 etsMMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'none') %>% set_engine("ets")
-#etsMMMD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
-# set_engine("ets")
-#ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
-#    set_engine("ets")
-#smooth_etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
-#  set_engine("smooth_es")
-#smooth_etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
-#  set_engine("smooth_es")
+ etsMMMD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+  set_engine("ets")
+ ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
+     set_engine("ets")
+ smooth_etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+   set_engine("smooth_es")
+ smooth_etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+   set_engine("smooth_es")
 smooth_etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
-#smooth_etsAAN <- exp_smoothing(error = "additive",trend = "additive",season = "none") %>%
-#  set_engine("smooth_es")
-#smooth_etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
-#  set_engine("smooth_es")
-#smooth_etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative") %>%
+ smooth_etsAAN <- exp_smoothing(error = "additive",trend = "additive",season = "none") %>%
+   set_engine("smooth_es")
+ smooth_etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
+   set_engine("smooth_es")
+ smooth_etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative") %>%
 #  set_engine("smooth_es")
 #smooth_etsAMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none") %>%
 #  set_engine("smooth_es")
@@ -198,42 +198,42 @@ model_work2 <- workflow_set(
   models  = list(
     M_croston           = croston,
     M_theta             = theta,
-    ##M_etsauto           = ets_auto,
-    ##M_smooth            = smooth_ets_auto,
-    ##M_etsANN = etsANN,
-    ##M_etsANA = etsANA,
-    #M_etsANM = etsANM,
-    ##M_etsAANN = etsAANN,
-    ##M_etsAAND = etsAAND,
-    ##M_etsAAAN = etsAAAN,
-    ##M_etsAAAD = etsAAAD,
-    #M_etsAAMN = etsAAMN,
-    #M_etsAAMD = etsAAMD,
-    #M_etsAMNN = etsAMNN,
-    #M_etsAMND = etsAMND,
-    #M_etsAMAN = etsAMAN,
-    #M_etsAMAD = etsAMAD,
-    #M_etsAMMN = etsAMMN,
-    #M_etsAMMD = etsAMMD,
-    #M_etsMNN = etsMNN,
-    #M_etsMNA = etsMNA,
-    ##M_etsMNM = etsMNM,
+      #M_etsauto           = ets_auto,
+      #M_smooth            = smooth_ets_auto,
+      M_etsANN = etsANN,
+      M_etsANA = etsANA,
+     M_etsANM = etsANM,
+      M_etsAANN = etsAANN,
+      M_etsAAND = etsAAND,
+      M_etsAAAN = etsAAAN,
+      M_etsAAAD = etsAAAD,
+     M_etsAAMN = etsAAMN,
+     M_etsAAMD = etsAAMD,
+     M_etsAMNN = etsAMNN,
+     M_etsAMND = etsAMND,
+     M_etsAMAN = etsAMAN,
+     M_etsAMAD = etsAMAD,
+     M_etsAMMN = etsAMMN,
+     M_etsAMMD = etsAMMD,
+     M_etsMNN = etsMNN,
+     M_etsMNA = etsMNA,
+      M_etsMNM = etsMNM,
     M_etsMANN = etsMANN,
-    ##M_etsMAND = etsMAND,
-    ##M_etsMAAN = etsMAAN,
-    ##M_etsMAAD = etsMAAD,
-    ##M_etsMAMN = etsMAMN,
-    ##M_etsMAMD = etsMAMD,
-    ##M_etsMMNN = etsMANN,
-    ##M_etsMMND = etsMMND,
-    #M_etsMMAN = etsMMAN,
+      M_etsMAND = etsMAND,
+      M_etsMAAN = etsMAAN,
+      M_etsMAAD = etsMAAD,
+      M_etsMAMN = etsMAMN,
+      M_etsMAMD = etsMAMD,
+      M_etsMMNN = etsMANN,
+      M_etsMMND = etsMMND,
+     M_etsMMAN = etsMMAN,
     M_etsMMAD = etsMMAD,
     M_etsMMMN = etsMMMN,
-    #M_etsMMMD = etsMMMD,
-    ##M_smooth_etsANN = smooth_etsANN,
-    ##M_smooth_etsANA = smooth_etsANA,
+     M_etsMMMD = etsMMMD,
+      M_smooth_etsANN = smooth_etsANN,
+      M_smooth_etsANA = smooth_etsANA,
     M_smooth_etsANM = smooth_etsANM,
-    ##M_smooth_etsAAN = smooth_etsAAN,
+      M_smooth_etsAAN = smooth_etsAAN,
     ##M_smooth_etsAAA = smooth_etsAAA,
     ##M_smooth_etsAAM = smooth_etsAAM,
     ##M_smooth_etsAMN = smooth_etsAMN,
@@ -261,131 +261,95 @@ Já no ajuste de modelos podemos perceber que a suavização exponencial não pu
 
 ```{r, eval= FALSE}
 model_metrics2 <- modeltime_wfs_rank(model_fit2,
-                              rank_metric = "rsq", minimize = F)
+                              rank_metric = "mae")
 model_metrics2 %>%
   select(-c(`.fit_model`, .model_id, .type)) %>%  distinct(`.model_desc`,.keep_all = T) %>%
-  mypdf1::pdf1_tbl("Métricas", format = 'latex', code = T)
+  mypdf1::pdf1_tbl("Métricas dos Modelos de Suavização Exponencia", format = "latex")
 ```
 \FloatBarrier
-\begin{table}
+\begin{table}[H]
 
-\caption{Métricas}
+\caption{Métricas dos Modelos de Suavização Exponencia}
 \centering
 \begin{tabular}[t]{c|c|c|c|c|c|c|c}
 \hline
 rank & .model\_desc & mae & mape & mase & smape & rmse & rsq\\
 \hline
-1 & ETS(AMA) & 1.7832282 & 22.88661 & 3.879991 & 27.25304 & 2.187881 & 0.1628969\\
+1 & ETSX(MAN) & 0.9482563 & 13.76290 & 2.063239 & 13.52065 & 1.107536 & 0.1541240\\
 \hline
-2 & ETSX(AMA) & 1.8083857 & 23.20880 & 3.934729 & 27.73209 & 2.219819 & 0.1624729\\
+3 & ETS(MAN) & 0.9503808 & 13.83595 & 2.067861 & 13.53914 & 1.107940 & 0.1541242\\
 \hline
-3 & ETS(AMM) & 1.7932412 & 23.00407 & 3.901778 & 27.44338 & 2.201565 & 0.1623454\\
+4 & ETS(M,A,N) & 0.9506912 & 13.84659 & 2.068537 & 13.54501 & 1.107840 & 0.1541242\\
 \hline
-4 & ETSX(AMM) & 1.7486102 & 22.45791 & 3.804668 & 26.60930 & 2.143628 & 0.1620309\\
+10 & ETS(MAA) & 0.9588516 & 13.84171 & 2.086293 & 13.66376 & 1.123567 & 0.1329984\\
 \hline
-5 & ETSX(AAA) & 1.8007971 & 23.14249 & 3.918218 & 27.60183 & 2.207568 & 0.1607854\\
+11 & ETSX(MAA) & 0.9598439 & 13.87724 & 2.088452 & 13.67609 & 1.123165 & 0.1331725\\
 \hline
-7 & ETSX(AAM) & 3.3375819 & 51.69319 & 7.261991 & 39.19193 & 3.570799 & 0.1551175\\
+13 & CROSTON METHOD & 1.0566146 & 15.54127 & 2.299008 & 15.09949 & 1.204980 & NA\\
 \hline
-8 & THETA METHOD & 1.2846034 & 16.83626 & 2.795071 & 18.55142 & 1.544815 & 0.1541242\\
+19 & ETSX(MMM) & 1.0910167 & 14.79220 & 2.373861 & 15.57832 & 1.300304 & 0.0827720\\
 \hline
-14 & ETS(M,A,N) & 0.9506912 & 13.84659 & 2.068537 & 13.54501 & 1.107840 & 0.1541242\\
+21 & ETS(MMM) & 1.1242293 & 15.11030 & 2.446125 & 16.07203 & 1.344843 & 0.0703107\\
 \hline
-20 & ETS(A,A,N) & 1.4355075 & 18.59210 & 3.123412 & 21.03802 & 1.742123 & 0.1541242\\
+22 & ETS(M,M,M) & 1.1572583 & 15.51976 & 2.517991 & 16.57406 & 1.377681 & 0.0310785\\
 \hline
-21 & ETS(AAN) & 1.4423830 & 18.67268 & 3.138372 & 21.15451 & 1.751335 & 0.1541242\\
+28 & ETSX(ANM) & 1.1764872 & 16.02217 & 2.559829 & 16.87385 & 1.364653 & 0.0076139\\
 \hline
-27 & ETSX(AAN) & 1.5735381 & 20.26498 & 3.423742 & 23.43613 & 1.923162 & 0.1541242\\
+29 & ETSX(MNN) & 1.2462616 & 16.49726 & 2.711646 & 17.94631 & 1.480544 & 0.1541241\\
 \hline
-28 & ETSX(MAN) & 0.9502657 & 13.83197 & 2.067611 & 13.53801 & 1.107868 & 0.1541242\\
+31 & ETS(M,N,N) & 1.2529108 & 16.54194 & 2.726114 & 18.05000 & 1.493865 & NA\\
 \hline
-29 & ETS(MAN) & 0.9503808 & 13.83595 & 2.067861 & 13.53914 & 1.107940 & 0.1541242\\
+37 & ETS(MNN) & 1.2529333 & 16.54211 & 2.726163 & 18.05036 & 1.493907 & NA\\
 \hline
-31 & ETSX(ANN) & 1.2597240 & 16.59663 & 2.740938 & 18.15692 & 1.506055 & 0.1541242\\
+39 & ETS(M,MD,N) & 1.2538124 & 16.55009 & 2.728075 & 18.06417 & 1.495339 & 0.0849640\\
 \hline
-33 & ETSX(MNN) & 1.2462616 & 16.49726 & 2.711646 & 17.94631 & 1.480544 & 0.1541241\\
+45 & ETS(M,AD,N) & 1.2566748 & 16.58070 & 2.734303 & 18.10941 & 1.499276 & 0.1351984\\
 \hline
-35 & ETSX(MMN) & 1.0984382 & 14.83984 & 2.390008 & 15.68178 & 1.309101 & 0.1541062\\
+51 & ETSX(ANA) & 1.2572438 & 16.66570 & 2.735541 & 18.12533 & 1.493752 & 0.0080862\\
 \hline
-37 & ETS(MMN) & 1.1107974 & 14.93255 & 2.416900 & 15.86351 & 1.328276 & 0.1541059\\
+52 & ETSX(ANN) & 1.2597240 & 16.59663 & 2.740938 & 18.15692 & 1.506055 & 0.1541242\\
 \hline
-38 & ETSX(AMN) & 2.2029984 & 28.50951 & 4.793337 & 35.27807 & 2.620894 & 0.1538384\\
+53 & ETS(M,N,A) & 1.2616011 & 16.66740 & 2.745022 & 18.19174 & 1.503203 & 0.0047931\\
 \hline
-39 & ETS(AMN) & 1.8672729 & 23.91854 & 4.062857 & 28.84935 & 2.294861 & 0.1537093\\
+59 & ETS(M,MD,M) & 1.2622415 & 16.68977 & 2.746415 & 18.20149 & 1.501747 & 0.0119256\\
 \hline
-41 & ETSX(MAM) & 2.4618725 & 36.27977 & 5.356602 & 29.36916 & 2.852528 & 0.1463684\\
+65 & ETS(ANM) & 1.2647154 & 16.70804 & 2.751798 & 18.24044 & 1.507543 & 0.0092757\\
 \hline
-42 & ETSX(MMA) & 1.1879523 & 18.10614 & 2.584775 & 16.33666 & 1.432187 & 0.1445788\\
+66 & ETS(ANA) & 1.2664086 & 16.73464 & 2.755482 & 18.26878 & 1.509865 & 0.0090474\\
 \hline
-43 & ETS(MAM) & 1.2641206 & 19.27180 & 2.750504 & 17.19557 & 1.525695 & 0.1433840\\
+68 & ETS(M,AD,M) & 1.2692679 & 16.74742 & 2.761704 & 18.31245 & 1.513117 & 0.0100718\\
 \hline
-45 & ETS(AAM) & 1.4157791 & 18.44125 & 3.080486 & 20.70461 & 1.704873 & 0.1421286\\
+74 & ETS(M,A,M) & 1.2695095 & 16.76412 & 2.762229 & 18.31714 & 1.513554 & 0.0140288\\
 \hline
-46 & ETSX(MAA) & 0.9969804 & 14.88651 & 2.169254 & 14.12988 & 1.161846 & 0.1410447\\
+80 & ETS(A,AD,A) & 1.2720614 & 16.77874 & 2.767782 & 18.35787 & 1.519923 & 0.0101815\\
 \hline
-48 & ETS(MMA) & 0.9930031 & 14.67107 & 2.160600 & 14.06794 & 1.151538 & 0.1390282\\
+87 & ETS(A,N,N) & 1.2764738 & 16.74424 & 2.777383 & 18.42147 & 1.534184 & NA\\
 \hline
-50 & ETS(M,AD,N) & 1.2566748 & 16.58070 & 2.734303 & 18.10941 & 1.499276 & 0.1351984\\
+93 & ETS(ANN) & 1.2766417 & 16.74570 & 2.777748 & 18.42413 & 1.534473 & NA\\
 \hline
-57 & ETS(MAA) & 0.9588516 & 13.84171 & 2.086293 & 13.66376 & 1.123567 & 0.1329984\\
+94 & ETS(A,AD,N) & 1.2767148 & 16.74648 & 2.777907 & 18.42529 & 1.534574 & 0.0624370\\
 \hline
-59 & ETS(A,A,A) & 1.4551112 & 18.85483 & 3.166066 & 21.37075 & 1.766832 & 0.1171396\\
+100 & ETS(A,N,A) & 1.2785790 & 16.84264 & 2.781963 & 18.46063 & 1.530631 & 0.0125995\\
 \hline
-66 & ETS(AAA) & 1.3650118 & 17.92009 & 2.970026 & 19.86302 & 1.630782 & 0.1079747\\
+106 & ETS(M,N,M) & 1.2830405 & 16.90115 & 2.791671 & 18.53364 & 1.535727 & 0.0112603\\
 \hline
-67 & ETS(M,MD,N) & 1.2538124 & 16.55009 & 2.728075 & 18.06417 & 1.495339 & 0.0849640\\
+112 & THETA METHOD & 1.2846034 & 16.83626 & 2.795071 & 18.55142 & 1.544815 & 0.1541242\\
 \hline
-73 & ETSX(MMM) & 1.0910167 & 14.79220 & 2.373861 & 15.57832 & 1.300304 & 0.0827720\\
+118 & ETS(M,A,A) & 1.2913573 & 17.00737 & 2.809766 & 18.66618 & 1.541874 & 0.0222350\\
 \hline
-75 & ETS(MMM) & 1.1242293 & 15.11030 & 2.446125 & 16.07203 & 1.344843 & 0.0703107\\
+124 & ETS(M,AD,A) & 1.3483684 & 17.57995 & 2.933813 & 19.58484 & 1.626831 & 0.0582191\\
 \hline
-76 & ETS(A,AD,N) & 1.2767148 & 16.74648 & 2.777907 & 18.42529 & 1.534574 & 0.0624370\\
+130 & ETS(A,A,N) & 1.4355075 & 18.59210 & 3.123412 & 21.03802 & 1.742123 & 0.1541242\\
 \hline
-82 & ETS(M,AD,A) & 1.3483684 & 17.57995 & 2.933813 & 19.58484 & 1.626831 & 0.0582191\\
+136 & ETSX(AAN) & 1.4418638 & 18.66746 & 3.137242 & 21.14579 & 1.750517 & 0.1541242\\
 \hline
-88 & ETS(M,M,M) & 1.1572583 & 15.51976 & 2.517991 & 16.57406 & 1.377681 & 0.0310785\\
+137 & ETS(AAN) & 1.4423830 & 18.67268 & 3.138372 & 21.15451 & 1.751335 & 0.1541242\\
 \hline
-94 & ETS(M,A,A) & 1.2913573 & 17.00737 & 2.809766 & 18.66618 & 1.541874 & 0.0222350\\
+138 & ETS(A,A,A) & 1.4551112 & 18.85483 & 3.166066 & 21.37075 & 1.766832 & 0.1171396\\
 \hline
-100 & ETS(M,A,M) & 1.2695095 & 16.76412 & 2.762229 & 18.31714 & 1.513554 & 0.0140288\\
+145 & ETS(AMA) & 1.7832282 & 22.88661 & 3.879991 & 27.25304 & 2.187881 & 0.1628969\\
 \hline
-106 & ETS(A,N,A) & 1.2785790 & 16.84264 & 2.781963 & 18.46063 & 1.530631 & 0.0125995\\
-\hline
-112 & ETS(M,MD,M) & 1.2622415 & 16.68977 & 2.746415 & 18.20149 & 1.501747 & 0.0119256\\
-\hline
-118 & ETS(M,N,M) & 1.2830405 & 16.90115 & 2.791671 & 18.53364 & 1.535727 & 0.0112603\\
-\hline
-124 & ETS(A,AD,A) & 1.2720614 & 16.77874 & 2.767782 & 18.35787 & 1.519923 & 0.0101815\\
-\hline
-130 & ETS(M,AD,M) & 1.2692679 & 16.74742 & 2.761704 & 18.31245 & 1.513117 & 0.0100718\\
-\hline
-136 & ETS(ANM) & 1.2647154 & 16.70804 & 2.751798 & 18.24044 & 1.507543 & 0.0092757\\
-\hline
-137 & ETSX(ANM) & 1.2533768 & 16.60980 & 2.727127 & 18.06192 & 1.489224 & 0.0090731\\
-\hline
-138 & ETS(ANA) & 1.2664086 & 16.73464 & 2.755482 & 18.26878 & 1.509865 & 0.0090474\\
-\hline
-139 & ETSX(ANA) & 1.2668817 & 16.73910 & 2.756512 & 18.27640 & 1.510641 & 0.0089136\\
-\hline
-140 & ETS(MNM) & 1.2599823 & 16.65494 & 2.741500 & 18.16517 & 1.500141 & 0.0084351\\
-\hline
-141 & ETSX(MNM) & 1.2600859 & 16.65582 & 2.741725 & 18.16688 & 1.500300 & 0.0082567\\
-\hline
-145 & ETS(MNA) & 1.2691353 & 16.74591 & 2.761415 & 18.31117 & 1.513827 & 0.0071942\\
-\hline
-146 & ETSX(MNA) & 1.2689581 & 16.74419 & 2.761030 & 18.30839 & 1.513497 & 0.0070945\\
-\hline
-148 & ETS(M,N,A) & 1.2616011 & 16.66740 & 2.745022 & 18.19174 & 1.503203 & 0.0047931\\
-\hline
-154 & CROSTON METHOD & 1.0566146 & 15.54127 & 2.299008 & 15.09949 & 1.204980 & NA\\
-\hline
-155 & ETS(A,N,N) & 1.2764738 & 16.74424 & 2.777383 & 18.42147 & 1.534184 & NA\\
-\hline
-157 & ETS(M,N,N) & 1.2529108 & 16.54194 & 2.726114 & 18.05000 & 1.493865 & NA\\
-\hline
-158 & ETS(ANN) & 1.2766417 & 16.74570 & 2.777748 & 18.42413 & 1.534473 & NA\\
-\hline
-160 & ETS(MNN) & 1.2529333 & 16.54211 & 2.726163 & 18.05036 & 1.493907 & NA\\
+146 & ETSX(AMA) & 1.8083857 & 23.20880 & 3.934729 & 27.73209 & 2.219819 & 0.1624729\\
 \hline
 \end{tabular}
 \end{table}
@@ -494,35 +458,70 @@ model_work1 <- workflow_set(
 model_fit1 <- modeltime_wfs_fit(.wfsets = model_work1, 
                             .split_prop = 0.8, 
                             .serie=df)
-fit1 <- prophet_catboostAF %>% fit(base, data = df_train)
 model_metrics1 <- modeltime_wfs_rank(model_fit1,
                               rank_metric = "mae")
 model_metrics1 %>%
   select(-`.fit_model`) %>%
   mypdf1::pdf1_tbl("Métricas")
+model_refit <- modeltime_wfs_refit(.wfs_results = model_metrics1, .serie = df)
 
-modelo1 <- prophet_xgboost_logMF %>%
-  fit(rate~Time, data = df_train)
-residuos <- as.data.frame(NULL)
+modeltime_wfs_rank(model_refit,
+                              rank_metric = "mae")
+
+for(i in 1:nrow(model_refit)){
+  if(i == 1){
+  residuos <- model_refit$`.model`[[i]] %>%
+  modeltime_calibrate(new_data = df) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }else{
+    residuos[nrow(residuos) +1, ] <- model_refit$`.model`[[i]] %>%
+  modeltime_calibrate(new_data = df) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }
+}
+
 for(i in 1:nrow(model_fit1)){
   if(i == 1){
-  residuos <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  residuos1 <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
   modeltime_calibrate(new_data = df_train) %>%
   modeltime_residuals() %>%
   modeltime_residuals_test()
   }else{
-    residuos[nrow(residuos) +1, ] <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  residuos1[nrow(residuos1) +1, ] <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
   modeltime_calibrate(new_data = df_train) %>%
   modeltime_residuals() %>%
   modeltime_residuals_test()
   }
 }
+
+for(i in 1:nrow(model_fit1)){
+  if(i == 1){
+  residuos2 <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }else{
+  residuos2[nrow(residuos2) +1, ] <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }
+}
+
+list(model_fit1$`.fit_model`[[26]]$.model[[1]],model_fit1$`.fit_model`[[25]]$.model[[1]])[1:2] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE
+     )
 ```
 
 ```{r, eval= FALSE}
-modeltime_wfs_forecast(.wfs_results = model_fit, 
-                       .serie = df, 
-                       .split_prop=0.8) %>% 
+modeltime_wfs_forecast(.wfs_results = model_fit1, 
+                       .serie = df, .split_prop = 0.01) %>% 
   plot_modeltime_forecast(.interactive=FALSE)
 ```
 
