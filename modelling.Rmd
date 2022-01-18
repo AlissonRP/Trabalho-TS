@@ -1,0 +1,1104 @@
+---
+title: "modeling"
+author: "Alisson Rosa e Vítor Pereira"
+abstract: "One Piece > Naruto"
+header-includes:
+   - \usepackage[brazil]{babel}
+   - \usepackage{bm, dcolumn,placeins}
+geometry: left=1.7cm, right=1.7cm, top=2.5cm, bottom=2.2cm
+output:
+  bookdown::pdf_document2:
+editor_options:
+  chunk_output_type: console
+indent: true
+---
+
+```{r setup, include=FALSE}
+options(digits = 3) # Arrendodamento
+ggplot2::theme_set(ggplot2::theme_minimal()) # Tema dos gráficos produzidos no ggplot2
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.7)
+# devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
+#devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+#devtools::install_github("AlbertoAlmuinha/boostime")
+library(tidyverse)
+library(tidymodels)
+library(modeltime)
+library(forecast)
+library(sknifedatar)
+library(catboost)
+extract_formula <- function(x) {
+  x <- summary(x)
+  x_vars <- x$variable[x$role == "predictor"]
+  y_vars <- x$variable[x$role == "outcome"]  
+  
+  x_vars <- paste0(x_vars, collapse = "+")
+  y_vars <- paste0(y_vars, collapse = "+")
+  
+  as.formula(paste(y_vars, x_vars, sep = "~"))
+}
+```
+
+```{r}
+df <- read_csv("naruto.csv")
+```
+# Introdução
+Aqui iremos testar diversos modelos como: suavização exponencial (ets), suavização exponencial no modelo de espaço de estado SSOE, suavização exponencial theta (equivalente a suavização exponencial simples com tendencia constante (drift)  e o procedimento Prophet do Facebook, é um modelo aditivo utilizando tendências não lineares, para entender mais o modelo Prophet [\textcolor{blue}{clique aqui.}](https://facebook.github.io/prophet/)
+# Modelagem
+
+## Dados de treino e teste
+
+```{r}
+splits <- initial_time_split(df, prop=0.8)
+df_train=training(splits)
+df_test=testing(splits)
+initial_time_split(df, prop = 0.8) %>%
+  timetk::tk_time_series_cv_plan() %>%
+  timetk::plot_time_series_cv_plan(as.Date(Time), rate, .interactive = FALSE,
+                           .title = "Avaliação de Naruto Shippuden dados de Treino / Teste") +
+  theme(strip.text = element_blank())
+```
+## Recipes
+Utilizaremos 6 recipes: normal, mês e ano como covariáveis, dia do ano como covariável, trimestre e semestre, utilizando lags e utilizando séries de Fourier.
+```{r}
+recipe_base <- recipe(rate~Time, data=df)
+
+recipe_date_features <- recipe_base %>% 
+  step_date(Time, features = c('month','year'))
+
+recipe_date_dayfeatures <- recipe_base %>% 
+  step_date(Time, features = c('doy'))
+
+recipe_date_extrafeatures <- recipe_date_features %>% 
+  step_date(Time, features = c('quarter','semester'))
+       
+recipe_date_extrafeatures_lag <- recipe_date_extrafeatures %>% 
+  step_lag(rate, lag = 1:6) %>% 
+  timetk::step_ts_impute(all_numeric(), period=365)
+  
+recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>% 
+  timetk::step_fourier(Time, period = 365/12, K = 1)
+```
+
+## Modelos
+
+### Suavização exponencial
+Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores. Sendo ao total 51 modelos testados.
+```{r, eval = F}
+#etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+#    set_engine("ets")
+#etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+#    set_engine("ets")
+#etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("ets")
+#etsAANN <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAND <- exp_smoothing(error = "additive",trend = "additive",season = "none", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAAAN <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAAD <- exp_smoothing(error = "additive",trend = "additive",season = "additive", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAAMN <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'none') %>%
+#    set_engine("ets")
+#etsAAMD <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+#set_engine("ets")
+#etsAMNN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMND <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAMAN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMAD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive", damping = 'damped') %>%
+#    set_engine("ets")
+#etsAMMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'none') %>%
+#    set_engine("ets")
+#etsAMMD <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+#    set_engine("ets")
+#etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
+#  set_engine("ets")
+#etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%
+#  set_engine("ets")
+#etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("ets")
+etsMANN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'none') %>%
+  set_engine("ets")
+#etsMAND <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMAAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'none') %>%
+#  set_engine("ets")
+#etsMAAD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMAMN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'none') %>%
+#  set_engine("ets")
+#etsMAMD <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative", damping = 'damped') %>%
+#  set_engine("ets")
+#etsMMNN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'none') %>%
+#  set_engine("ets")
+#etsMMND <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none", damping = 'damped') %>%
+# set_engine("ets")
+# etsMMAN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'none') %>%
+#  set_engine("ets")
+etsMMAD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive", damping = 'damped') %>%
+  set_engine("ets")
+etsMMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'none') %>% set_engine("ets")
+#etsMMMD <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative", damping = 'damped') %>%
+# set_engine("ets")
+#ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
+#    set_engine("ets")
+#smooth_etsANN <- exp_smoothing(error = "additive",trend = "none",season = "none") %>%
+#  set_engine("smooth_es")
+#smooth_etsANA <- exp_smoothing(error = "additive",trend = "none",season = "additive") %>%
+#  set_engine("smooth_es")
+smooth_etsANM <- exp_smoothing(error= "additive",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
+#smooth_etsAAN <- exp_smoothing(error = "additive",trend = "additive",season = "none") %>%
+#  set_engine("smooth_es")
+#smooth_etsAAA <- exp_smoothing(error = "additive",trend = "additive",season = "additive") %>%
+#  set_engine("smooth_es")
+#smooth_etsAAM <- exp_smoothing(error = "additive",trend = "additive",season = "multiplicative") %>%
+#  set_engine("smooth_es")
+#smooth_etsAMN <- exp_smoothing(error = "additive",trend = "multiplicative",season = "none") %>%
+#  set_engine("smooth_es")
+smooth_etsAMA <- exp_smoothing(error = "additive",trend = "multiplicative",season = "additive") %>%
+  set_engine("smooth_es")
+#smooth_etsAMM <- exp_smoothing(error = "additive",trend = "multiplicative",season = "multiplicative") %>%
+#  set_engine("smooth_es")
+smooth_etsMNN <- exp_smoothing(erro = "multiplicative",trend = "none",season = "none") %>%
+  set_engine("smooth_es")
+#smooth_etsMNA <- exp_smoothing(erro = "multiplicative",trend = "none",season = "additive") %>%set_engine("smooth_es")
+#smooth_etsMNM <- exp_smoothing(error= "multiplicative",trend = "none",season = "multiplicative") %>% set_engine("smooth_es")
+smooth_etsMAN <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "none") %>%
+  set_engine("smooth_es")
+smooth_etsMAA <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "additive") %>%
+  set_engine("smooth_es")
+#smooth_etsMAM <- exp_smoothing(erro = "multiplicative",trend = "additive",season = "multiplicative") %>%
+#  set_engine("smooth_es")
+#smooth_etsMMN <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "none") %>%
+ # set_engine("smooth_es")
+#smooth_etsMMA <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "additive") %>%
+#  set_engine("smooth_es")
+smooth_etsMMM <- exp_smoothing(erro = "multiplicative",trend = "multiplicative",season = "multiplicative") %>%
+  set_engine("smooth_es")
+#smooth_ets_auto <- exp_smoothing(error = "auto",trend = "auto",season = "auto") %>%
+#  set_engine("smooth_es")
+croston <- exp_smoothing() %>%
+    set_engine("croston")
+theta <-  exp_smoothing() %>%
+    set_engine("theta")
+```
+
+### Ajustando os modelos
+Para os modelos de suavização exponencial iremos os escolher pelo menos um modelo que seja o melhor em cada uma dessas categorias: Erro Aditivo, Erro Multiplicativo, Sem Tendência, Tendência Aditiva, Tendência Multiplicativa, Tendência Amortecida, Sem Sazonalidade, Sazonalidade Aditiva, Sazonalidade Multiplicativa e bom R².
+```{r, eval = FALSE}
+
+```{r, eval = FALSE}
+model_work2 <- workflow_set(
+  preproc = list(
+    base                  = recipe_base,
+    features              = recipe_date_features, 
+    features_day          = recipe_date_dayfeatures,
+    extrafeatures         = recipe_date_extrafeatures,
+    extrafeatures_lag     = recipe_date_extrafeatures_lag,
+    extrafeatures_fourier = recipe_date_extrafeatures_fourier
+  ),
+  models  = list(
+        ##M_etsauto           = ets_auto,
+    ##M_smooth            = smooth_ets_auto,
+    ##M_etsANN = etsANN,
+    ##M_etsANA = etsANA,
+    #M_etsANM = etsANM,
+    ##M_etsAANN = etsAANN,
+    ##M_etsAAND = etsAAND,
+    ##M_etsAAAN = etsAAAN,
+    ##M_etsAAAD = etsAAAD,
+    #M_etsAAMN = etsAAMN,
+    #M_etsAAMD = etsAAMD,
+    #M_etsAMNN = etsAMNN,
+    #M_etsAMND = etsAMND,
+    #M_etsAMAN = etsAMAN,
+    #M_etsAMAD = etsAMAD,
+    #M_etsAMMN = etsAMMN,
+    #M_etsAMMD = etsAMMD,
+    #M_etsMNN = etsMNN,
+    #M_etsMNA = etsMNA,
+    ##M_etsMNM = etsMNM,
+    M_etsMANN = etsMANN,
+    ##M_etsMAND = etsMAND,
+    ##M_etsMAAN = etsMAAN,
+    ##M_etsMAAD = etsMAAD,
+    ##M_etsMAMN = etsMAMN,
+    ##M_etsMAMD = etsMAMD,
+    ##M_etsMMNN = etsMANN,
+    ##M_etsMMND = etsMMND,
+    #M_etsMMAN = etsMMAN,
+    M_etsMMAD = etsMMAD,
+    M_etsMMMN = etsMMMN,
+    #M_etsMMMD = etsMMMD,
+    ##M_smooth_etsANN = smooth_etsANN,
+    ##M_smooth_etsANA = smooth_etsANA,
+    ##M_smooth_etsANA = smooth_etsANA,
+    M_smooth_etsANM = smooth_etsANM,
+    ##M_smooth_etsAAN = smooth_etsAAN,
+    ##M_smooth_etsAAA = smooth_etsAAA,
+    ##M_smooth_etsAMM = smooth_etsAMM,
+    M_smooth_etsMNN = smooth_etsMNN,
+    #M_smooth_etsMNA = smooth_etsMNA,
+    M_smooth_etsMNM = smooth_etsMNM,
+    #M_smooth_etsMNM = smooth_etsMNM,
+    M_smooth_etsMAN = smooth_etsMAN,
+    M_smooth_etsMAA = smooth_etsMAA,
+    ##M_smooth_etsMAM = smooth_etsMAM,
+    M_smooth_etsMMN = smooth_etsMMN,
+    M_smooth_etsMMA = smooth_etsMMA,
+    ##M_smooth_etsMMN = smooth_etsMMN,
+    ##M_smooth_etsMMA = smooth_etsMMA,
+    M_smooth_etsMMM = smooth_etsMMM
+  ),
+  cross   = TRUE
+)
+model_fit2 <- modeltime_wfs_fit(.wfsets = model_work2, 
+                            .split_prop = 0.8, 
+                            .serie=df)
+
+```
+
+Já no ajuste de modelos podemos perceber que a suavização exponencial não pude utilizar de algumas combinações de erro, tendencia e sazonalidade, esses são modelos são: ets(A,N,M), ets(A,A,M), ets(A,AD,M), ets(A,M,N), ets(A,MD,N), ets(A,M,A), ets(A,MD,A), ets(A,M,M), ets(A,MD,M), ets(M,M,A) e ets(M,MD,A).
+
+```{r, eval= FALSE}
+model_metrics2 <- modeltime_wfs_rank(model_fit2,
+                              rank_metric = "mae")
+model_metrics2 %>%
+  select(-c(`.fit_model`, .model_id, .type)) %>%  distinct(`.model_desc`,.keep_all = T) %>%
+  mypdf1::pdf1_tbl("Métricas dos Modelos de Suavização Exponencia", format = "latex")
+```
+\FloatBarrier
+\begin{table}[H]
+
+\caption{Métricas dos Modelos de Suavização Exponencia}
+\centering
+\begin{tabular}[t]{c|c|c|c|c|c|c|c}
+\hline
+rank & .model\_desc & mae & mape & mase & smape & rmse & rsq\\
+\hline
+1 & ETSX(MAN) & 0.9482563 & 13.76290 & 2.063239 & 13.52065 & 1.107536 & 0.1541240\\
+\hline
+3 & ETS(MAN) & 0.9503808 & 13.83595 & 2.067861 & 13.53914 & 1.107940 & 0.1541242\\
+\hline
+4 & ETS(M,A,N) & 0.9506912 & 13.84659 & 2.068537 & 13.54501 & 1.107840 & 0.1541242\\
+\hline
+10 & ETS(MAA) & 0.9588516 & 13.84171 & 2.086293 & 13.66376 & 1.123567 & 0.1329984\\
+\hline
+11 & ETSX(MAA) & 0.9598439 & 13.87724 & 2.088452 & 13.67609 & 1.123165 & 0.1331725\\
+\hline
+13 & CROSTON METHOD & 1.0566146 & 15.54127 & 2.299008 & 15.09949 & 1.204980 & NA\\
+\hline
+19 & ETSX(MMM) & 1.0910167 & 14.79220 & 2.373861 & 15.57832 & 1.300304 & 0.0827720\\
+\hline
+21 & ETS(MMM) & 1.1242293 & 15.11030 & 2.446125 & 16.07203 & 1.344843 & 0.0703107\\
+\hline
+22 & ETS(M,M,M) & 1.1572583 & 15.51976 & 2.517991 & 16.57406 & 1.377681 & 0.0310785\\
+\hline
+28 & ETSX(ANM) & 1.1764872 & 16.02217 & 2.559829 & 16.87385 & 1.364653 & 0.0076139\\
+\hline
+29 & ETSX(MNN) & 1.2462616 & 16.49726 & 2.711646 & 17.94631 & 1.480544 & 0.1541241\\
+\hline
+31 & ETS(M,N,N) & 1.2529108 & 16.54194 & 2.726114 & 18.05000 & 1.493865 & NA\\
+\hline
+37 & ETS(MNN) & 1.2529333 & 16.54211 & 2.726163 & 18.05036 & 1.493907 & NA\\
+\hline
+39 & ETS(M,MD,N) & 1.2538124 & 16.55009 & 2.728075 & 18.06417 & 1.495339 & 0.0849640\\
+\hline
+45 & ETS(M,AD,N) & 1.2566748 & 16.58070 & 2.734303 & 18.10941 & 1.499276 & 0.1351984\\
+\hline
+51 & ETSX(ANA) & 1.2572438 & 16.66570 & 2.735541 & 18.12533 & 1.493752 & 0.0080862\\
+\hline
+52 & ETSX(ANN) & 1.2597240 & 16.59663 & 2.740938 & 18.15692 & 1.506055 & 0.1541242\\
+\hline
+53 & ETS(M,N,A) & 1.2616011 & 16.66740 & 2.745022 & 18.19174 & 1.503203 & 0.0047931\\
+\hline
+59 & ETS(M,MD,M) & 1.2622415 & 16.68977 & 2.746415 & 18.20149 & 1.501747 & 0.0119256\\
+\hline
+65 & ETS(ANM) & 1.2647154 & 16.70804 & 2.751798 & 18.24044 & 1.507543 & 0.0092757\\
+\hline
+66 & ETS(ANA) & 1.2664086 & 16.73464 & 2.755482 & 18.26878 & 1.509865 & 0.0090474\\
+\hline
+68 & ETS(M,AD,M) & 1.2692679 & 16.74742 & 2.761704 & 18.31245 & 1.513117 & 0.0100718\\
+\hline
+74 & ETS(M,A,M) & 1.2695095 & 16.76412 & 2.762229 & 18.31714 & 1.513554 & 0.0140288\\
+\hline
+80 & ETS(A,AD,A) & 1.2720614 & 16.77874 & 2.767782 & 18.35787 & 1.519923 & 0.0101815\\
+\hline
+87 & ETS(A,N,N) & 1.2764738 & 16.74424 & 2.777383 & 18.42147 & 1.534184 & NA\\
+\hline
+93 & ETS(ANN) & 1.2766417 & 16.74570 & 2.777748 & 18.42413 & 1.534473 & NA\\
+\hline
+94 & ETS(A,AD,N) & 1.2767148 & 16.74648 & 2.777907 & 18.42529 & 1.534574 & 0.0624370\\
+\hline
+100 & ETS(A,N,A) & 1.2785790 & 16.84264 & 2.781963 & 18.46063 & 1.530631 & 0.0125995\\
+\hline
+106 & ETS(M,N,M) & 1.2830405 & 16.90115 & 2.791671 & 18.53364 & 1.535727 & 0.0112603\\
+\hline
+112 & THETA METHOD & 1.2846034 & 16.83626 & 2.795071 & 18.55142 & 1.544815 & 0.1541242\\
+\hline
+118 & ETS(M,A,A) & 1.2913573 & 17.00737 & 2.809766 & 18.66618 & 1.541874 & 0.0222350\\
+\hline
+124 & ETS(M,AD,A) & 1.3483684 & 17.57995 & 2.933813 & 19.58484 & 1.626831 & 0.0582191\\
+\hline
+130 & ETS(A,A,N) & 1.4355075 & 18.59210 & 3.123412 & 21.03802 & 1.742123 & 0.1541242\\
+\hline
+136 & ETSX(AAN) & 1.4418638 & 18.66746 & 3.137242 & 21.14579 & 1.750517 & 0.1541242\\
+\hline
+137 & ETS(AAN) & 1.4423830 & 18.67268 & 3.138372 & 21.15451 & 1.751335 & 0.1541242\\
+\hline
+138 & ETS(A,A,A) & 1.4551112 & 18.85483 & 3.166066 & 21.37075 & 1.766832 & 0.1171396\\
+\hline
+145 & ETS(AMA) & 1.7832282 & 22.88661 & 3.879991 & 27.25304 & 2.187881 & 0.1628969\\
+\hline
+146 & ETSX(AMA) & 1.8083857 & 23.20880 & 3.934729 & 27.73209 & 2.219819 & 0.1624729\\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Assim os modelos escolhidos foram: 
+  - ETSX(M,A,N) - melhor modelo
+  - ETS(M,A,N) - melhor modelo da suavização exponencial normal
+  - Croston - Bom método num geral e é de engine diferente
+  - Theta - Bom R² e é de engine diferente
+  - ETSX(M,A,A) - Melhor modelo com sazonalidade aditiva
+  - ETSX(M,M,M) - Melhor modelo com sazonalide multiplicativa
+  - ETSX(A,N,M) - Melhor modelo com erro aditivo e sem tendencia
+  - ETS(M,M,M) - Segundo melhor modelo da suavização exponencial normal 
+  - ETS(M, MD, N) - Melhor modelo com tendencia amortecida
+  - ETSX(M,N,N) - Modelo equilibrado em todas as medidas e com bom R² entre os ETS()
+  - ETSX(A,M,A) - Modelo com melhor R²
+
+```{r, eval= FALSE}
+prophet_boost <- prophet_boost(mode = 'regression') %>% 
+  set_engine("prophet_xgboost")
+prophet_boost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_range = 0.8,
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic'
+  ) %>%
+  set_engine("prophet_xgboost")
+prophet_catboostAF <- boostime::boost_prophet(growth = "linear",
+                                                       changepoint_num = 29,
+                                                       changepoint_range = 0.7323078,
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "additive",
+                                                       trees = 2000,
+                                                       tree_depth = 4,
+                                                       learn_rate = 0.00335856,
+                                                       mtry = 9) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_xgboost_logMF <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = 33,
+    changepoint_range = 0.8628352,
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    season = "multiplicative",
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 2000,
+    tree_depth = 2,
+    learn_rate = 0.0009750737,
+    mtry = 7
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+
+#mars <- mars(mode = 'regression') %>% 
+#  set_engine('earth') #precisa do pacote "earth"
+
+#auto_arima_boost <- arima_boost() %>% 
+#  set_engine('arima_xgboost')
+
+#arima_boost <- arima_boost(
+#    tree_depth = 6,
+#    learn_rate = 0.1
+#) %>%
+#    set_engine(engine = "arima_xgboost")
+```
+
+```{r, eval= FALSE}
+model_work1 <- workflow_set(
+  preproc = list(
+    base                  = recipe_base,
+    features              = recipe_date_features, 
+    features_day          = recipe_date_dayfeatures,
+    extrafeatures         = recipe_date_extrafeatures,
+    extrafeatures_lag     = recipe_date_extrafeatures_lag,
+    extrafeatures_fourier = recipe_date_extrafeatures_fourier
+  ),
+  models  = list(
+    M_croston           = croston,
+    M_theta             = theta,
+    M_etsMANN = etsMANN,
+    M_etsMMAD = etsMMAD,
+    M_etsMMMN = etsMMMN,
+    M_smooth_etsANM = smooth_etsANM,
+    M_smooth_etsAMA = smooth_etsAMA,
+    M_smooth_etsMNN = smooth_etsMNN,
+    M_smooth_etsMAN = smooth_etsMAN,
+    M_smooth_etsMAA = smooth_etsMAA,
+    M_smooth_etsMMM = smooth_etsMMM,
+    #M_auto_arima_boost       = auto_arima_boost,
+    M_prophet_boost_log = prophet_boost_log, 
+    M_prophet_boost     = prophet_boost,
+    M_prophet_boost_logM = prophet_xgboost_logMF,
+    M_prophet_catboostA = catboost::prophet_catboostAF
+    #M_mars              = mars,
+    #M_arima_boost       = arima_boost,
+    #M_etsAAM            = etsAAM
+  ),
+  cross   = TRUE
+)
+model_fit1 <- modeltime_wfs_fit(.wfsets = model_work1, 
+                            .split_prop = 0.8, 
+                            .serie=df)
+model_metrics1 <- modeltime_wfs_rank(model_fit1,
+                              rank_metric = "mae")
+model_metrics1 %>%
+  select(-`.fit_model`) %>%
+  mypdf1::pdf1_tbl("Métricas")
+model_refit <- modeltime_wfs_refit(.wfs_results = model_metrics1, .serie = df)
+
+modeltime_wfs_rank(model_refit,
+                              rank_metric = "mae")
+
+for(i in 1:nrow(model_refit)){
+  if(i == 1){
+  residuos <- model_refit$`.model`[[i]] %>%
+  modeltime_calibrate(new_data = df) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }else{
+    residuos[nrow(residuos) +1, ] <- model_refit$`.model`[[i]] %>%
+  modeltime_calibrate(new_data = df) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }
+}
+
+for(i in 1:nrow(model_fit1)){
+  if(i == 1){
+  residuos1 <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }else{
+  residuos1[nrow(residuos1) +1, ] <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }
+}
+
+for(i in 1:nrow(model_fit1)){
+  if(i == 1){
+  residuos2 <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }else{
+  residuos2[nrow(residuos2) +1, ] <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }
+}
+
+list(model_fit1$`.fit_model`[[26]]$.model[[1]],model_fit1$`.fit_model`[[25]]$.model[[1]])[1:2] %>% modeltime_table()%>%
+     modeltime_forecast(
+         new_data    = df,
+         actual_data = df
+     ) %>%
+     plot_modeltime_forecast(.conf_interval_show = FALSE
+     )
+```
+
+```{r, eval= FALSE}
+modeltime_wfs_forecast(.wfs_results = model_fit1, 
+                       .serie = df, .split_prop = 0.01) %>% 
+  plot_modeltime_forecast(.interactive=FALSE)
+```
+
+### Tunando XGBoost, Lightgbm e Catboost
+
+```{r, eval= FALSE}
+df_resamples <- df_train %>%
+  timetk::time_series_cv(
+    date_var    = Time, 
+    assess      = "2 years",
+    skip        = "1 year",
+    cumulative  = TRUE,
+    slice_limit = 6
+  )
+
+
+recipe_base_1 <- recipe(rate~Time, data=training(df_resamples$splits[[1]]))
+
+recipe_date_features_1 <- recipe_base_1 %>% 
+  step_date(Time, features = c('month','year'))
+
+recipe_date_extrafeatures_1 <- recipe_date_features_1 %>% 
+  step_date(Time, features = c('quarter','semester'))
+       
+recipe_date_extrafeatures_lag_1 <- recipe_date_extrafeatures_1 %>% 
+  step_lag(rate, lag = 1:6) %>% 
+  timetk::step_ts_impute(all_numeric(), period=365)
+
+recipe_date_dayfeatures_1 <- recipe_date_extrafeatures_lag_1  %>% 
+  step_date(Time, features = c('doy'))
+
+recipe_date_extrafeatures_fourier_1<-recipe_date_extrafeatures_1  %>% 
+  timetk::step_fourier(Time, period = 365/12, K = 1)
+
+df_resamples %>%
+  timetk::tk_time_series_cv_plan() %>% 
+  timetk::plot_time_series_cv_plan(.date_var = Time, .value = rate)
+#prophet_light <- boostime::boost_prophet(growth = "linear",
+#                                                       changepoint_num = tune(),
+#                                                       changepoint_range = tune(),
+#                                                       seasonality_yearly = FALSE,
+#                                                       seasonality_daily = FALSE,
+#                                                       seasonality_weekly = FALSE,
+#                                                       season = "multiplicative",
+#                                                       trees = 1000,
+#                                                       tree_depth = tune(),
+#                                                       learn_rate = tune(),
+#                                                       mtry = tune()) %>%
+#                              set_engine("prophet_lightgbm", verbose = 0)
+#prophet_light_log <- boostime::boost_prophet(growth = "logistic",
+#                                                       changepoint_num = tune(),
+#                                                       changepoint_range = tune(),
+#                                                       logistic_floor = min(df$rate),
+#                                                       logistic_cap = max(df$rate),
+#                                                       seasonality_yearly = FALSE,
+#                                                       seasonality_daily = FALSE,
+#                                                       seasonality_weekly = FALSE,
+#                                                       season = "multiplicative",
+#                                                       trees = 2000,
+#                                                       tree_depth = tune(),
+#                                                       learn_rate = tune(),
+#                                                       mtry = tune()) %>%
+#                              set_engine("prophet_lightgbm", verbose = 0)
+prophet_catboost <- boostime::boost_prophet(growth = "linear",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "multiplicative",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_catboostA <- boostime::boost_prophet(growth = "linear",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "additive",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_catboost_log <- boostime::boost_prophet(growth = "logistic",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       logistic_floor = min(df$rate),
+                                                       logistic_cap = max(df$rate),                                     
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "multiplicative",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_catboost_logA <- boostime::boost_prophet(growth = "logistic",
+                                                       changepoint_num = tune(),
+                                                       changepoint_range = tune(),
+                                                       logistic_floor = min(df$rate),
+                                                       logistic_cap = max(df$rate),                                     
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "additive",
+                                                       trees = 2000,
+                                                       tree_depth = tune(),
+                                                       learn_rate = tune(),
+                                                       mtry = tune()) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_xgboost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 2000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+prophet_xgboost_logM <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    season = "multiplicative",
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 2000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+prophet_xgboost <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    growth = 'linear',
+    trees = 1000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+prophet_xgboostM <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    season = "multiplicative",
+    growth = 'linear',
+    trees = 1000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+```
+
+#### Catboost
+
+```{r, eval= FALSE}
+tune_work_cat <- workflow() %>%
+    add_model(prophet_catboost_log) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work1_cat<- workflow() %>%
+    add_model(prophet_catboost_log) %>%
+    add_recipe(recipe_date_features_1 )
+
+tune_work2_cat <- workflow() %>%
+    add_model(prophet_catboost_log) %>%
+    add_recipe(recipe_date_extrafeatures_fourier_1)
+
+tune_work3_cat <- workflow() %>%
+    add_model(prophet_catboost) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work4_cat <- workflow() %>%
+    add_model(prophet_catboost_logA) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work5_cat <- workflow() %>%
+    add_model(prophet_catboostA) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+
+tune_results_cat <- tune_grid(
+    object     = tune_work_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_cat1 <- tune_grid(
+    object     = tune_work1_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work1_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_cat2 <- tune_grid(
+    object     = tune_work2_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work2_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_cat3 <- tune_grid(
+    object     = tune_work3_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work3_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_cat4 <- tune_grid(
+    object     = tune_work4_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work4_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+tune_results_cat5 <- tune_grid(
+    object     = tune_work5_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work5_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+
+tuned_best_cat_rmse <- tune_results_cat %>%
+    select_best("rmse")
+tuned_best_cat_rsq <- tune_results_cat %>%
+    select_best("rsq")
+tuned_best_cat_rmse1 <- tune_results_cat1 %>%
+    select_best("rmse")
+tuned_best_cat_rsq1 <- tune_results_cat1 %>%
+    select_best("rsq")
+tuned_best_cat_rmse2 <- tune_results_cat2 %>%
+    select_best("rmse")
+tuned_best_cat_rsq2 <- tune_results_cat2 %>%
+    select_best("rsq")
+tuned_best_cat_rmse3<- tune_results_cat3 %>%
+    select_best("rmse")
+tuned_best_cat_rsq3 <- tune_results_cat3 %>%
+    select_best("rsq")
+tuned_best_cat_rmse4 <- tune_results_cat4 %>%
+    select_best("rmse")
+tuned_best_cat_rsq4 <- tune_results_cat4 %>%
+    select_best("rsq")
+tuned_best_cat_rmse5 <- tune_results_cat5 %>%
+    select_best("rmse")
+tuned_best_cat_rsq5 <- tune_results_cat5 %>%
+    select_best("rsq")
+
+fin_wflw <- tune_work_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse)
+fin_wflw1 <- tune_work_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq)
+fin_wflw2 <- tune_work1_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse1)
+fin_wflw3 <- tune_work1_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq1)
+fin_wflw4 <- tune_work2_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse2)
+fin_wflw5 <- tune_work2_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq2)
+fin_wflw6 <- tune_work3_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse3)
+fin_wflw7 <- tune_work3_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq3)
+fin_wflw8 <- tune_work4_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse4)
+fin_wflw9 <- tune_work4_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq4)
+fin_wflw10 <- tune_work5_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse5)
+fin_wflw11 <- tune_work5_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq5)
+
+
+
+wflw_fit <- fin_wflw %>%
+    fit(df_train)
+wflw_fit1 <- fin_wflw1 %>%
+    fit(df_train) 
+wflw_fit2 <- fin_wflw2 %>%
+    fit(df_train)
+wflw_fit3 <- fin_wflw3 %>%
+    fit(df_train) 
+wflw_fit4 <- fin_wflw4 %>%
+    fit(df_train)
+wflw_fit5 <- fin_wflw5 %>%
+    fit(df_train) 
+wflw_fit6 <- fin_wflw6 %>%
+    fit(df_train) 
+wflw_fit7 <- fin_wflw7 %>%
+    fit(df_train) 
+wflw_fit8 <- fin_wflw8 %>%
+    fit(df_train) 
+wflw_fit9 <- fin_wflw9 %>%
+    fit(df_train)
+wflw_fit10 <- fin_wflw10 %>%
+    fit(df_train) 
+wflw_fit11 <- fin_wflw11 %>%
+    fit(df_train) 
+
+
+modeltime_tbl <- wflw_fit %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit1 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit2 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit3 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit4 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit5 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit6 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit7 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit8 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit9 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit10 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit11 %>% modeltime_table()
+calibration_tbl <- modeltime_tbl %>% 
+                   modeltime_calibrate(
+                     df_test
+                   )
+calibration_tbl %>%
+  modeltime_accuracy(
+    new_data = df_test
+  ) %>%
+  table_modeltime_accuracy(.interactive = FALSE)
+```
+#### XGboost
+
+```{r, eval= FALSE}
+tune_work_xg <- workflow() %>%
+    add_model(prophet_xgboost_log) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work1_xg<- workflow() %>%
+    add_model(prophet_xgboost_logM) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work2_xg <- workflow() %>%
+    add_model(prophet_xgboost) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work3_xg <- workflow() %>%
+    add_model(prophet_xgboostM) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+
+tune_results_xg <- tune_grid(
+    object     = tune_work_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_xg1 <- tune_grid(
+    object     = tune_work1_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work1_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_xg2 <- tune_grid(
+    object     = tune_work2_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work2_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_xg3 <- tune_grid(
+    object     = tune_work3_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work3_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+
+tuned_best_xg_rmse <- tune_results_xg %>%
+    select_best("rmse")
+tuned_best_xg_rsq <- tune_results_xg %>%
+    select_best("rsq")
+tuned_best_xg_rmse1 <- tune_results_xg1 %>%
+    select_best("rmse")
+tuned_best_xg_rsq1 <- tune_results_xg1 %>%
+    select_best("rsq")
+tuned_best_xg_rmse2 <- tune_results_xg2 %>%
+    select_best("rmse")
+tuned_best_xg_rsq2 <- tune_results_xg2 %>%
+    select_best("rsq")
+tuned_best_xg_rmse3<- tune_results_xg3 %>%
+    select_best("rmse")
+tuned_best_xg_rsq3 <- tune_results_xg3 %>%
+    select_best("rsq")
+
+fin_wflw <- tune_work_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse)
+fin_wflw1 <- tune_work_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq)
+fin_wflw2 <- tune_work1_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse1)
+fin_wflw3 <- tune_work1_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq1)
+fin_wflw4 <- tune_work2_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse2)
+fin_wflw5 <- tune_work2_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq2)
+fin_wflw6 <- tune_work3_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse3)
+fin_wflw7 <- tune_work3_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq3)
+
+
+wflw_fit <- fin_wflw %>%
+    fit(df_train)
+wflw_fit1 <- fin_wflw1 %>%
+    fit(df_train) 
+wflw_fit2 <- fin_wflw2 %>%
+    fit(df_train)
+wflw_fit3 <- fin_wflw3 %>%
+    fit(df_train) 
+wflw_fit4 <- fin_wflw4 %>%
+    fit(df_train)
+wflw_fit5 <- fin_wflw5 %>%
+    fit(df_train) 
+wflw_fit6 <- fin_wflw6 %>%
+    fit(df_train) 
+wflw_fit7 <- fin_wflw7 %>%
+    fit(df_train) 
+
+
+modeltime_tbl <- wflw_fit %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit1 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit2 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit3 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit4 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit5 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit6 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit7 %>% modeltime_table()
+
+calibration_tbl <- modeltime_tbl %>% 
+                   modeltime_calibrate(
+                     df_test
+                   )
+calibration_tbl %>%
+  modeltime_accuracy(
+    new_data = df_test
+  ) %>%
+  table_modeltime_accuracy(.interactive = FALSE)
+```
+
+
+
+```{r, eval= FALSE}
+prophet_boost_log <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = tune(),
+    changepoint_range = tune(),
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 1000,
+    tree_depth = tune(),
+    learn_rate = tune(),
+    mtry = tune()
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
+
+
+tune_work <- workflow() %>%
+    add_model(prophet_boost_log) %>%
+    add_recipe(recipe_date_extrafeatures_lag)
+
+
+tune_results <- tune_grid(
+    object     = tune_work,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tuned_best <- tune_results %>%
+    select_best("rsq")
+fin_wflw <- tune_work %>%
+    finalize_workflow(parameters = tuned_best)
+
+wflw_fit <- fin_wflw %>%
+    fit(training(df_resamples$splits[[1]])) 
+(modeltime_tbl <- wflw_fit %>% modeltime_table())
+calibration_tbl <- modeltime_tbl %>% 
+                   modeltime_calibrate(
+                     testing(df_resamples$splits[[1]])
+                   )
+calibration_tbl %>%
+  modeltime_accuracy(
+    new_data = testing(df_resamples$splits[[1]])
+  ) %>%
+  table_modeltime_accuracy(.interactive = FALSE)
+```
+
+## Pro meu grande amigo Alisson se divertir
+
+```{r, eval = FALSE}
+healthyR.ts::ts_model_spec_tune_template("prophet_xgboost")
+healthyR.ts::ts_model_spec_tune_template("prophet")
+
+recipe <- healthyR.ts::ts_auto_recipe(
+  .data     = df, 
+  .date_col = Time, 
+  .pred_col = rate
+)
+
+recipe_earth <- healthyR.ts::ts_wfs_mars(
+  .model_type = "earth", 
+  .recipe_list = recipe
+)
+
+split <- time_series_split(
+    df, Time, assess = 24, skip = 6, cumulative = TRUE
+)
+wf_fits <- recipe_earth %>%
+  modeltime_fit_workflowset(
+    data = training(split), 
+    control = control_fit_workflowset(allow_par = FALSE, verbose = TRUE)
+  )
+models_tbl <- wf_fits %>%
+  filter(.model != "NULL")
+calibration_tbl <- models_tbl %>%
+  modeltime_calibrate(new_data = testing(split))
+
+calibration_tbl
+output <- healthyR.ts::ts_model_auto_tune(
+  .modeltime_model_id = 1,
+  .calibration_tbl    = calibration_tbl,
+  .splits_obj         = split,
+  .drop_training_na   = TRUE,
+  .date_col           = Time,
+  .value_col          = rate,
+  .tscv_assess        = "24 months",
+  .tscv_skip          = "6 months",
+  .num_cores          = 1
+)
+output$data$calibration_tbl
+output$data$best_tuned_results
+fin_wflw <- wf_fits %>%
+    finalize_workflow(parameters = output$data$best_tuned_results_tbl)
+```
