@@ -25,7 +25,16 @@ library(tidymodels)
 library(modeltime)
 library(forecast)
 library(sknifedatar)
-library(kableExtra)
+extract_formula <- function(x) {
+  x <- summary(x)
+  x_vars <- x$variable[x$role == "predictor"]
+  y_vars <- x$variable[x$role == "outcome"]  
+  
+  x_vars <- paste0(x_vars, collapse = "+")
+  y_vars <- paste0(y_vars, collapse = "+")
+  
+  as.formula(paste(y_vars, x_vars, sep = "~"))
+}
 ```
 
 ```{r}
@@ -406,6 +415,35 @@ prophet_boost_log <- prophet_boost(
     growth = 'logistic'
   ) %>%
   set_engine("prophet_xgboost")
+prophet_catboostAF <- boostime::boost_prophet(growth = "linear",
+                                                       changepoint_num = 29,
+                                                       changepoint_range = 0.7323078,
+                                                       seasonality_yearly = FALSE,
+                                                       seasonality_daily = FALSE,
+                                                       seasonality_weekly = FALSE,
+                                                       season = "additive",
+                                                       trees = 2000,
+                                                       tree_depth = 4,
+                                                       learn_rate = 0.00335856,
+                                                       mtry = 9) %>%
+                                                      set_engine("prophet_catboost", verbose = 0)
+prophet_xgboost_logMF <- prophet_boost(
+    mode = 'regression',
+    changepoint_num = 33,
+    changepoint_range = 0.8628352,
+    seasonality_yearly = FALSE,
+    seasonality_daily = FALSE,
+    seasonality_weekly = FALSE,
+    season = "multiplicative",
+    logistic_floor = min(df$rate),
+    logistic_cap = max(df$rate),
+    growth = 'logistic',
+    trees = 2000,
+    tree_depth = 2,
+    learn_rate = 0.0009750737,
+    mtry = 7
+  ) %>%
+  set_engine("prophet_xgboost", verbose = 0)
 
 #mars <- mars(mode = 'regression') %>% 
 #  set_engine('earth') #precisa do pacote "earth"
@@ -444,7 +482,9 @@ model_work1 <- workflow_set(
     M_smooth_etsMMM = smooth_etsMMM,
     #M_auto_arima_boost       = auto_arima_boost,
     M_prophet_boost_log = prophet_boost_log, 
-    M_prophet_boost     = prophet_boost
+    M_prophet_boost     = prophet_boost,
+    M_prophet_boost_logM = prophet_xgboost_logMF,
+    M_prophet_catboostA = catboost::prophet_catboostAF
     #M_mars              = mars,
     #M_arima_boost       = arima_boost,
     #M_etsAAM            = etsAAM
@@ -454,11 +494,29 @@ model_work1 <- workflow_set(
 model_fit1 <- modeltime_wfs_fit(.wfsets = model_work1, 
                             .split_prop = 0.8, 
                             .serie=df)
+fit1 <- prophet_catboostAF %>% fit(base, data = df_train)
 model_metrics1 <- modeltime_wfs_rank(model_fit1,
-                              rank_metric = "rmse")
+                              rank_metric = "mae")
 model_metrics1 %>%
   select(-`.fit_model`) %>%
   mypdf1::pdf1_tbl("Métricas")
+
+modelo1 <- prophet_xgboost_logMF %>%
+  fit(rate~Time, data = df_train)
+residuos <- as.data.frame(NULL)
+for(i in 1:nrow(model_fit1)){
+  if(i == 1){
+  residuos <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }else{
+    residuos[nrow(residuos) +1, ] <- model_fit1$`.fit_model`[[i]]$.model[[1]] %>%
+  modeltime_calibrate(new_data = df_train) %>%
+  modeltime_residuals() %>%
+  modeltime_residuals_test()
+  }
+}
 ```
 
 ```{r, eval= FALSE}
@@ -471,7 +529,7 @@ modeltime_wfs_forecast(.wfs_results = model_fit,
 ### Tunando XGBoost, Lightgbm e Catboost
 
 ```{r, eval= FALSE}
-df_resamples <- df %>%
+df_resamples <- df_train %>%
   timetk::time_series_cv(
     date_var    = Time, 
     assess      = "2 years",
@@ -483,20 +541,20 @@ df_resamples <- df %>%
 
 recipe_base_1 <- recipe(rate~Time, data=training(df_resamples$splits[[1]]))
 
-recipe_date_features_1 <- recipe_base %>% 
+recipe_date_features_1 <- recipe_base_1 %>% 
   step_date(Time, features = c('month','year'))
 
-recipe_date_extrafeatures_1 <- recipe_date_features %>% 
+recipe_date_extrafeatures_1 <- recipe_date_features_1 %>% 
   step_date(Time, features = c('quarter','semester'))
        
-recipe_date_extrafeatures_lag_1 <- recipe_date_extrafeatures %>% 
+recipe_date_extrafeatures_lag_1 <- recipe_date_extrafeatures_1 %>% 
   step_lag(rate, lag = 1:6) %>% 
   timetk::step_ts_impute(all_numeric(), period=365)
 
-recipe_date_dayfeatures_1 <- recipe_date_extrafeatures_lag  %>% 
+recipe_date_dayfeatures_1 <- recipe_date_extrafeatures_lag_1  %>% 
   step_date(Time, features = c('doy'))
 
-recipe_date_extrafeatures_fourier_1<-recipe_date_extrafeatures  %>% 
+recipe_date_extrafeatures_fourier_1<-recipe_date_extrafeatures_1  %>% 
   timetk::step_fourier(Time, period = 365/12, K = 1)
 
 df_resamples %>%
@@ -613,7 +671,7 @@ prophet_xgboost_logM <- prophet_boost(
     mtry = tune()
   ) %>%
   set_engine("prophet_xgboost", verbose = 0)
-prophet_xgboost_ <- prophet_boost(
+prophet_xgboost <- prophet_boost(
     mode = 'regression',
     changepoint_num = tune(),
     changepoint_range = tune(),
@@ -627,7 +685,7 @@ prophet_xgboost_ <- prophet_boost(
     mtry = tune()
   ) %>%
   set_engine("prophet_xgboost", verbose = 0)
-prophet_xgboost_ <- prophet_boost(
+prophet_xgboostM <- prophet_boost(
     mode = 'regression',
     changepoint_num = tune(),
     changepoint_range = tune(),
@@ -659,6 +717,19 @@ tune_work2_cat <- workflow() %>%
     add_model(prophet_catboost_log) %>%
     add_recipe(recipe_date_extrafeatures_fourier_1)
 
+tune_work3_cat <- workflow() %>%
+    add_model(prophet_catboost) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work4_cat <- workflow() %>%
+    add_model(prophet_catboost_logA) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work5_cat <- workflow() %>%
+    add_model(prophet_catboostA) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+
 tune_results_cat <- tune_grid(
     object     = tune_work_cat,
     resamples  = df_resamples,
@@ -683,6 +754,30 @@ tune_results_cat2 <- tune_grid(
     control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
 )
 
+tune_results_cat3 <- tune_grid(
+    object     = tune_work3_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work3_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_cat4 <- tune_grid(
+    object     = tune_work4_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work4_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+tune_results_cat5 <- tune_grid(
+    object     = tune_work5_cat,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work5_cat),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+
 tuned_best_cat_rmse <- tune_results_cat %>%
     select_best("rmse")
 tuned_best_cat_rsq <- tune_results_cat %>%
@@ -695,48 +790,216 @@ tuned_best_cat_rmse2 <- tune_results_cat2 %>%
     select_best("rmse")
 tuned_best_cat_rsq2 <- tune_results_cat2 %>%
     select_best("rsq")
+tuned_best_cat_rmse3<- tune_results_cat3 %>%
+    select_best("rmse")
+tuned_best_cat_rsq3 <- tune_results_cat3 %>%
+    select_best("rsq")
+tuned_best_cat_rmse4 <- tune_results_cat4 %>%
+    select_best("rmse")
+tuned_best_cat_rsq4 <- tune_results_cat4 %>%
+    select_best("rsq")
+tuned_best_cat_rmse5 <- tune_results_cat5 %>%
+    select_best("rmse")
+tuned_best_cat_rsq5 <- tune_results_cat5 %>%
+    select_best("rsq")
 
 fin_wflw <- tune_work_cat %>%
-    finalize_workflow(parameters = tuned_best_light_rmse)
+    finalize_workflow(parameters = tuned_best_cat_rmse)
 fin_wflw1 <- tune_work_cat %>%
     finalize_workflow(parameters = tuned_best_cat_rsq)
 fin_wflw2 <- tune_work1_cat %>%
-    finalize_workflow(parameters = tuned_best_light_rmse)
+    finalize_workflow(parameters = tuned_best_cat_rmse1)
 fin_wflw3 <- tune_work1_cat %>%
-    finalize_workflow(parameters = tuned_best_cat_rsq)
+    finalize_workflow(parameters = tuned_best_cat_rsq1)
 fin_wflw4 <- tune_work2_cat %>%
-    finalize_workflow(parameters = tuned_best_light_rmse)
+    finalize_workflow(parameters = tuned_best_cat_rmse2)
 fin_wflw5 <- tune_work2_cat %>%
-    finalize_workflow(parameters = tuned_best_cat_rsq)
+    finalize_workflow(parameters = tuned_best_cat_rsq2)
+fin_wflw6 <- tune_work3_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse3)
+fin_wflw7 <- tune_work3_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq3)
+fin_wflw8 <- tune_work4_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse4)
+fin_wflw9 <- tune_work4_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq4)
+fin_wflw10 <- tune_work5_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rmse5)
+fin_wflw11 <- tune_work5_cat %>%
+    finalize_workflow(parameters = tuned_best_cat_rsq5)
+
 
 
 wflw_fit <- fin_wflw %>%
-    fit(training(df_resamples$splits[[1]]))
+    fit(df_train)
 wflw_fit1 <- fin_wflw1 %>%
-    fit(training(df_resamples$splits[[1]])) 
+    fit(df_train) 
 wflw_fit2 <- fin_wflw2 %>%
-    fit(training(df_resamples$splits[[1]]))
+    fit(df_train)
 wflw_fit3 <- fin_wflw3 %>%
-    fit(training(df_resamples$splits[[1]])) 
+    fit(df_train) 
 wflw_fit4 <- fin_wflw4 %>%
-    fit(training(df_resamples$splits[[1]]))
+    fit(df_train)
 wflw_fit5 <- fin_wflw5 %>%
-    fit(training(df_resamples$splits[[1]])) 
+    fit(df_train) 
+wflw_fit6 <- fin_wflw6 %>%
+    fit(df_train) 
+wflw_fit7 <- fin_wflw7 %>%
+    fit(df_train) 
+wflw_fit8 <- fin_wflw8 %>%
+    fit(df_train) 
+wflw_fit9 <- fin_wflw9 %>%
+    fit(df_train)
+wflw_fit10 <- fin_wflw10 %>%
+    fit(df_train) 
+wflw_fit11 <- fin_wflw11 %>%
+    fit(df_train) 
 
 
 modeltime_tbl <- wflw_fit %>% modeltime_table()
-modeltime_tbl[2,] <- wflw_fit1 %>% modeltime_table()
-modeltime_tbl[3,] <- wflw_fit2 %>% modeltime_table()
-modeltime_tbl[4,] <- wflw_fit3 %>% modeltime_table()
-modeltime_tbl[5,] <- wflw_fit4 %>% modeltime_table()
-modeltime_tbl[6,] <- wflw_fit5 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit1 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit2 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit3 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit4 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit5 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit6 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit7 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit8 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit9 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit10 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit11 %>% modeltime_table()
 calibration_tbl <- modeltime_tbl %>% 
                    modeltime_calibrate(
-                     testing(df_resamples$splits[[1]])
+                     df_test
                    )
 calibration_tbl %>%
   modeltime_accuracy(
-    new_data = testing(df_resamples$splits[[1]])
+    new_data = df_test
+  ) %>%
+  table_modeltime_accuracy(.interactive = FALSE)
+```
+#### XGboost
+
+```{r, eval= FALSE}
+tune_work_xg <- workflow() %>%
+    add_model(prophet_xgboost_log) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work1_xg<- workflow() %>%
+    add_model(prophet_xgboost_logM) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work2_xg <- workflow() %>%
+    add_model(prophet_xgboost) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+tune_work3_xg <- workflow() %>%
+    add_model(prophet_xgboostM) %>%
+    add_recipe(recipe_date_extrafeatures_lag_1)
+
+
+tune_results_xg <- tune_grid(
+    object     = tune_work_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_xg1 <- tune_grid(
+    object     = tune_work1_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work1_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_xg2 <- tune_grid(
+    object     = tune_work2_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work2_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+tune_results_xg3 <- tune_grid(
+    object     = tune_work3_xg,
+    resamples  = df_resamples,
+    param_info = parameters(tune_work3_xg),
+    grid       = 5,
+    control    = control_grid(verbose = TRUE, allow_par = TRUE, parallel_over = "everything")
+)
+
+
+tuned_best_xg_rmse <- tune_results_xg %>%
+    select_best("rmse")
+tuned_best_xg_rsq <- tune_results_xg %>%
+    select_best("rsq")
+tuned_best_xg_rmse1 <- tune_results_xg1 %>%
+    select_best("rmse")
+tuned_best_xg_rsq1 <- tune_results_xg1 %>%
+    select_best("rsq")
+tuned_best_xg_rmse2 <- tune_results_xg2 %>%
+    select_best("rmse")
+tuned_best_xg_rsq2 <- tune_results_xg2 %>%
+    select_best("rsq")
+tuned_best_xg_rmse3<- tune_results_xg3 %>%
+    select_best("rmse")
+tuned_best_xg_rsq3 <- tune_results_xg3 %>%
+    select_best("rsq")
+
+fin_wflw <- tune_work_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse)
+fin_wflw1 <- tune_work_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq)
+fin_wflw2 <- tune_work1_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse1)
+fin_wflw3 <- tune_work1_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq1)
+fin_wflw4 <- tune_work2_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse2)
+fin_wflw5 <- tune_work2_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq2)
+fin_wflw6 <- tune_work3_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rmse3)
+fin_wflw7 <- tune_work3_xg %>%
+    finalize_workflow(parameters = tuned_best_xg_rsq3)
+
+
+wflw_fit <- fin_wflw %>%
+    fit(df_train)
+wflw_fit1 <- fin_wflw1 %>%
+    fit(df_train) 
+wflw_fit2 <- fin_wflw2 %>%
+    fit(df_train)
+wflw_fit3 <- fin_wflw3 %>%
+    fit(df_train) 
+wflw_fit4 <- fin_wflw4 %>%
+    fit(df_train)
+wflw_fit5 <- fin_wflw5 %>%
+    fit(df_train) 
+wflw_fit6 <- fin_wflw6 %>%
+    fit(df_train) 
+wflw_fit7 <- fin_wflw7 %>%
+    fit(df_train) 
+
+
+modeltime_tbl <- wflw_fit %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit1 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit2 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit3 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit4 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit5 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit6 %>% modeltime_table()
+modeltime_tbl[nrow(modeltime_tbl) + 1,] <- wflw_fit7 %>% modeltime_table()
+
+calibration_tbl <- modeltime_tbl %>% 
+                   modeltime_calibrate(
+                     df_test
+                   )
+calibration_tbl %>%
+  modeltime_accuracy(
+    new_data = df_test
   ) %>%
   table_modeltime_accuracy(.interactive = FALSE)
 ```
