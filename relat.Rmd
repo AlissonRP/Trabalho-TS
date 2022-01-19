@@ -704,7 +704,8 @@ Então apenas 7 dos nosso modelos passaram nos testes de Shapiro-Wilk, Box-Pierc
 Além dos testes acima também podemos buscar uma confirmação visual de que os modelos são adequados, assim iremos usar a autocorrelação parcial para corroborar com o que foi mostrado pelos testes:
 
 ```{r}
-ggPacf(model_refit$.model[[28]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]])
+ggPacf(model_refit$.model[[28]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]])+
+labs(title = "Função de autocorrelação Parcial",x="Defasagem")
 ```
 ```{r}
 ggPacf(model_refit$.model[[29]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]])
