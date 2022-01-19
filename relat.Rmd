@@ -178,9 +178,7 @@ Os gráficos de seção anterior evidenciaram a possibilidade da série não ser
 ## Tendência 
 
 Tendência refere-se a um algum  comportamento   não - estocástico da série em algum momento do tempo, se tal comportamento só acontece em alguns momentos especifícos do tempo, chamamos de tendência estocástica, do contrário é dita determinística. Vamos começar pelos testes de tendência determinística, que em termos sumarizados possuem como hipótese:
-$$
-H_0:\text{A série não possui tendência determinística}
-$$
+
 ```{r}
 kendal <- trend::mk.test(df$rate)
 wald <- trend::ww.test(df$rate)
@@ -532,51 +530,10 @@ model_metrics1[1:20,] %>%
   select(-c(`.fit_model`, `.model_id`, `.type`)) %>%
   mypdf1::pdf1_tbl("Métricas nos dados de teste")
 ```
-Assim temos também que as métricas no dados de treino são:
-```{r}
-for(i in 1:20){
-  if(i==1){
-    my_m1 <- my_metrics(df,
-                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".actual"]],
-                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".fitted"]])
-    my_m1 <- my_m1 %>% select(-.estimator)
-    names(my_m1) <- c("Métricas", model_metrics1$.model_desc[[i]])
-    Metricas <- unlist(my_m1 %>% select(Métricas))
-    my_m1 <- my_m1 %>%
-      select(-Métricas) %>%
-      t() %>%
-      as.data.frame()
-    names(my_m1) <- str_to_upper(Metricas)
-    my_m1 <- my_m1 %>% mutate(Modelo = rownames(my_m1))
-  }else{
-    my_m2 <- my_metrics(df,
-                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".actual"]],
-                        (model_metrics1$.fit_model[[i]])[[2]][[1]][["fit"]][["fit"]][["fit"]][["data"]][[".fitted"]])
-    my_m2 <- my_m2 %>% select(-.estimator)
-    names(my_m2) <- c("Métricas", model_metrics1$.model_desc[[i]])
-    Metricas <- unlist(my_m2 %>% select(Métricas))
-    my_m2 <- my_m2 %>%
-      select(-Métricas) %>%
-      t() %>%
-      as.data.frame()
-    my_m2 <- my_m2 %>% mutate(Modelo = rownames(my_m2))
-    my_m1[nrow(my_m1) + 1, ] <- my_m2
-  }
-}
-rownames(my_m1) <- 1:20
-
-
-my_m1%>%
-  select(Modelo, 1:6) %>%
-  mypdf1::pdf1_tbl("Métricas nos dados de treino")
-```
-
 
 #### Gráficos
 
-
 Nesta seção será mostrado alguns gráficos interessantes dos seguintes modelos: Prophet's, ETSX(MAN), ETS(MAN) do smooth, ETS(MAN) do forecast e ETS(MAA) do smooth.
-
 
 ##### Previsões
 
@@ -637,98 +594,19 @@ model_metrics1$`.fit_model`[[5]]$.model[[1]] %>% modeltime_table()%>%
 ```{r}
 model_metrics1$`.fit_model`[[13]]$.model[[1]] %>% modeltime_table()%>%
      modeltime_forecast(
-         new_data    = df,
+         new_data    = df_test,
          actual_data = df
      ) %>%
      plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETS(M,A,N) do pacote smooth", .interactive = FALSE
      )+ 
   model_metrics1$`.fit_model`[[15]]$.model[[1]] %>% modeltime_table()%>%
      modeltime_forecast(
-         new_data    = df,
+         new_data    = df_test,
          actual_data = df
      ) %>%
      plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETSX(M,A,A)", .interactive = FALSE
      )
 ```
-
-
-
-##### Prophet Predição e Previsão 
-
-```{r}
-model_metrics1$`.fit_model`[[1]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com Catboost", .interactive = FALSE
-     ) + 
-  model_metrics1$`.fit_model`[[2]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost tunnado", .interactive = FALSE
-     )
-```
-
-
-```{r}
-model_metrics1$`.fit_model`[[3]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost", .interactive = FALSE
-     )+ 
-  model_metrics1$`.fit_model`[[4]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost default", .interactive = FALSE
-     )
-```
-
-##### Suavização Exponencial Predição e Previsão 
-
-```{r}
-model_metrics1$`.fit_model`[[5]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETSX(M,A,N)", .interactive = FALSE
-     ) + 
-  model_metrics1$`.fit_model`[[6]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETS(M,A,N)", .interactive = FALSE
-     )
-```
-
-
-```{r}
-model_metrics1$`.fit_model`[[13]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETS(M,A,N) do pacote smooth", .interactive = FALSE
-     )+ 
-  model_metrics1$`.fit_model`[[15]]$.model[[1]] %>% modeltime_table()%>%
-     modeltime_forecast(
-         new_data    = df,
-         actual_data = df
-     ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "ETSX(M,A,A)", .interactive = FALSE
-     )
-```
-
-
-
 
 ### Reajuste do modelo
 Agora iremos reajustar o modelo utilizando não apenas os dados de treino, mas toda a base de dados.
@@ -772,7 +650,6 @@ for(i in 1:nrow(model_refit)){
 rownames(my_m1) <- 1:nrow(model_refit)
 ```
 
-
 ```{r}
 my_m1%>%
   select(Modelo, 1:6) %>%
@@ -781,6 +658,24 @@ my_m1%>%
 ```
 
 ### Análise de resíduo
+Apesar dos modelos acima apresentarem bons valores nas métricas acima, não significa que eles são inferencialmente adequadas, então nessa seção testaremos quais dos modelos ajustados são adequados de acordo com os seguintes critérios: Todos os parâmetros estiamdos são estatisticamente significantes, os resíduos não apresentam autocorrelação serial, correlação cruzada ou heterocedasticidade conficional, para os resíduos se comportarem como ruídos brancos e os resíduos não violam a hipótese de distribuição normal.
+
+Assim usaremos os seguintes testes:
+
+**Shapiro-Wilk** para testar a normalidade dos resíduos, com a seguinte hipótese:
+$$
+H_0:\text{ Os dados seguem uma distribuição Normal}
+$$
+**Ljung-Box e Box-Pierce** para testar a independência dos resíduos, com a seguinte hipótese:
+$$
+H_0:\text{Os dados são independentes e identicamente distribuídos.}
+$$
+
+**Durbin-Watson** para analisar correlação serial nos resíduos:
+$$
+H_0:\text{Não há correlação serial e }  \rho = 0  
+$$
+Porém, nesse teste não é usado p-valor e sim a Estatística de Durbin-Watson, assim para não ter correlação serial a estatística deve ser o mais próximo de 2.
 
 ```{r}
 for(i in 1:nrow(model_refit)){
@@ -800,20 +695,36 @@ for(i in 1:nrow(model_refit)){
 
 
 ```{r}
-residuos %>% mutate(.model_desc = model_fit1$.model_desc) %>% filter(ljung_box >0.05) %>% mypdf1::pdf1_tbl("Modelos que passaram nos teste de resíduos")
+residuos %>% mutate(.model_desc = model_fit1$.model_desc)%>% mutate(n = 1:nrow(residuos)) %>% filter(ljung_box >0.05) %>% mypdf1::pdf1_tbl("Modelos que passaram nos teste de resíduos")
 ```
 Então apenas 7 dos nosso modelos passaram nos testes de Shapiro-Wilk, Box-Pierce e Ljung-Box: ETS(A,M,A), ETS(A,N,M), THETA, PROPHET XGBOOST DEFAULT, PROPHET XGBOOST, ETSX(A,M,A) e ETSX(A,N,M). Desses nossos 7 modelos apenas 2 apresentaram boas métricas: PROPHET XGBOOST DEFAULT e PROPHET XGBOOST. Então esses seriam os modelos indicados para a predição e previsão da Série Temporal.
 
-#### Gráficos
+#### Gráfico da AutoCorrelação Parcial
+
+Além dos testes acima também podemos buscar uma confirmação visual de que os modelos são adequados, assim iremos usar a autocorrelação parcial para corroborar com o que foi mostrado pelos testes:
 
 ```{r}
-model_refit$.model[[25]] %>% modeltime_table()%>%
+ggPacf(model_refit$.model[[28]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]])+
+labs(title = "Função de autocorrelação Parcial",x="Defasagem")
+```
+```{r}
+ggPacf(model_refit$.model[[29]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]])
+```
+
+Na FacP do modelo PROPHET XGBOOST DEFAULT, podemos notar que em alguns pequenos pontos existe uma correlação significativa, mas estando no limite da correlação e com valores muito pequenos, assim podendo ser desconsiderada. No entanto, no modelo PROPHET XGBOOST não há nenhuma correlação que saia dos limites de não autocorrelação.
+
+#### Gráficos dos modelos reajustados
+
+Nesta seção veremos os dois modelos escolhidos, que passaram na análise de resíduo e tem boas métricas:
+
+```{r}
+model_refit$.model[[28]] %>% modeltime_table()%>%
      modeltime_forecast(
          new_data    = df,
          actual_data = df
      ) %>%
      plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost reajustada", .interactive = FALSE
-     )+ model_refit$.model[[25]] %>% modeltime_table()%>%
+     )+ model_refit$.model[[28]] %>% modeltime_table()%>%
     modeltime_forecast(
         new_data    = df_test,
         actual_data = df
@@ -823,13 +734,13 @@ model_refit$.model[[25]] %>% modeltime_table()%>%
 
 
 ```{r}
-model_refit$.model[[26]] %>% modeltime_table()%>%
+model_refit$.model[[29]] %>% modeltime_table()%>%
      modeltime_forecast(
          new_data    = df,
          actual_data = df
      ) %>%
      plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost default reajustada", .interactive = FALSE
-     ) + model_refit$.model[[26]] %>% modeltime_table()%>%
+     ) + model_refit$.model[[29]] %>% modeltime_table()%>%
     modeltime_forecast(
         new_data    = df_test,
         actual_data = df
@@ -923,14 +834,16 @@ df1 %>%
 
 ```{r, results = F, fig.show='hide'}
 dfts <- msts(df %>% select(rate, numero_episodio), seasonal.periods = 365 / 7, start = c(2007, 2.5))
-treino <- df[1:400, ]
 treino <- window(dfts[, 1], end = c(2014, 38))
 teste <- window(dfts[, 1], start = c(2014, 38))
 
 h1 <- holt(treino, h = 100)
 h2 <- holt(treino, damped = TRUE, h = 100)
 
-HoltWinters(treino, seasonal = "multiplicative") # Não consegui utilizar voltou o erro de frequência
+#h3 <- HoltWinters(treino, seasonal = "multiplicative") # Não consegui utilizar voltou o erro de frequência
+
+
+#predict.HoltWinters(h3, 100)
 ```
 ### Holt não Amortecido
 
@@ -967,11 +880,7 @@ ggplot() +
   geom_vline(xintercept = max(df1$numero_episodio))
 ```
 
-
-
-
-
-### Calculando Métricas de Acurácia dos Modelos não-ModelTime
+### Métricas
 
 ```{r}
 true_values1 <- df %>%
@@ -1010,14 +919,64 @@ names(M1) <- str_to_upper(Metricas)
 M1 %>%
   mypdf1::pdf1_tbl("Métricas nos dados de teste")
 ```
+
+### Reajustando os dados
+
 ```{r}
-df |>
-  group_by(Saga) |>
-  summarise(total = n()) |>
-  (\(x) x[, 2])() |>
-  unlist() |>
-  mean()
+mms1 <- smooth::sma(df$rate, order = 21, silent = FALSE, interval = "p")
+fit_forecast <- data.frame(forecast = c(mms1$fitted), n = 1:length(c(mms1$fitted)))
+fit_forecast <- fit_forecast[-c(501:(500+ length(mms1$forecast))),]
+
+dfts <- msts(df %>% select(rate, numero_episodio), seasonal.periods = 365 / 7, start = c(2007, 2.5))
+data <- window(dfts[, 1])
+
+h1 <- holt(data, h= 1)
+h2 <- holt(data, damped = TRUE, h = 1)
+
+forecast_h1 <- data.frame(forecast = c(h1$fitted), n = 1:length(c(h1$fitted)))
+forecast_h1 <- forecast_h1[-c(501:(500+ length(h1$mean))),]
+
+forecast_h2 <- data.frame(forecast = c(h2$fitted), n = 1:length(c(h2$fitted)))
+forecast_h2 <- forecast_h2[-c(501:(500+ length(h2$mean))),]
 ```
+
+
+```{r}
+ggplot() +
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
+  geom_line(data = fit_forecast, aes(x = n, y = forecast, colour = "Forecast")) +
+  geom_vline(xintercept = max(df1$numero_episodio))
+  
+```
+
+```{r}
+ggplot() +
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
+  geom_line(data = forecast_h1, aes(x = n, y = forecast, colour = "Forecast")) +
+  geom_vline(xintercept = max(df1$numero_episodio)) +
+  ggplot() +
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
+  geom_line(data = forecast_h2, aes(x = n, y = forecast, colour = "Forecast")) +
+  geom_vline(xintercept = max(df1$numero_episodio))
+  
+```
+
+
+### Análise de Resíduos
+Assim como nos modelos do pacote ModelTime, não significa que os modelos acima são inferencialmente adequadas, então nessa seção usaremos os mesmos testes definidos na seção de análise de resíduos anterior para verificação do modelo:
+
+```{r}
+data.frame(Modelos = c("SMA", "Holt", "Holt amortecido"), 
+           Ljung_box = c(Box.test(mms1$residuals, type = "Ljung-Box")$p.value,Box.test(h1$residuals, type = "Ljung-Box")$p.value, Box.test(h2$residuals, type = "Ljung-Box")$p.value), 
+           Box_Pierce = c(Box.test(mms1$residuals, type = "Box-Pierce")$p.value,Box.test(h1$residuals, type = "Box-Pierce")$p.value, Box.test(h2$residuals, type = "Box-Pierce")$p.value), 
+           Durbin_Watson = c(car::durbinWatsonTest(c(mms1$residuals)),car::durbinWatsonTest(c(h1$residuals)), car::durbinWatsonTest(c(h2$residuals))), 
+           Shapiro_wilk = c(shapiro.test(mms1$residuals)$p.value, shapiro.test(h1$residuals)$p.value, shapiro.test(h2$residuals)$p.value)) |>
+           mypdf1::pdf1_tbl("Testes aplicados nos resíduos")
+```
+
+Assim, podemos ver que os modelo que não são significativos pelos teste de Shapiro-Wilk, pois os resíduos não possuem distribuição normal. Porém, nos outros testes tem um bom comportamento tendo os resíduos independentes de acordo com Ljung-Box e Box-Pierce, assim como não possuem correlação serial pelo teste de Durbin-Watson, o único modelo que é rejeitado em todos os testes é o Modelo de Médias Móveis. 
+
+# Conclusão
 
 
 # Referências
