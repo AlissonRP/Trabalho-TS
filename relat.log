@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.16)  18 JAN 2022 23:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.16)  19 JAN 2022 03:29
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -718,299 +718,344 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 \tf@toc=\write4
 \openout4 = `relat.toc'.
 
-<relat_files/figure-latex/plttipo-1.pdf, id=75, 563.10374pt x 266.9975pt>
+<relat_files/figure-latex/plttipo-1.pdf, id=80, 563.10374pt x 289.08pt>
 File: relat_files/figure-latex/plttipo-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/plttipo-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/plttipo-1.pdf  used on input 
-line 132.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+line 129.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
 [1
 
 {c:/Users/user/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex
 .map}]
-<relat_files/figure-latex/unnamed-chunk-3-1.pdf, id=92, 563.10374pt x 266.9975p
-t>
+<relat_files/figure-latex/unnamed-chunk-3-1.pdf, id=95, 563.10374pt x 289.08pt>
+
 File: relat_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-3-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-3-1.pdf  used o
-n input line 155.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
+n input line 152.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
 [2pdfTeX warning (ext4): destination with the same identifier (name{table.1}) h
 as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.155 ...ure-latex/unnamed-chunk-3-1} \end{center}
+l.152 ...ure-latex/unnamed-chunk-3-1} \end{center}
                                                    <./relat_files/figure-latex/
 plttipo-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-4-1.pdf, id=103, 563.10374pt x 266.9975
-pt>
+<relat_files/figure-latex/unnamed-chunk-4-1.pdf, id=106, 563.10374pt x 289.08pt
+>
 File: relat_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-4-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-4-1.pdf  used o
-n input line 160.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-5-1.pdf, id=104, 563.10374pt x 266.9975
-pt>
+n input line 157.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[3 <./relat_files/figure-latex/unnamed-chunk-3-1.pdf> <./relat_files/figure-lat
+ex/unnamed-chunk-4-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-5-1.pdf, id=121, 563.10374pt x 289.08pt
+>
 File: relat_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-5-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-5-1.pdf  used o
-n input line 166.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[3 <./relat_files/figure-latex/unnamed-chunk-3-1.pdf> <./relat_files/figure-lat
-ex/unnamed-chunk-4-1.pdf>]
+n input line 163.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
-73.
+70.
 (c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-Underfull \hbox (badness 10000) in paragraph at lines 173--175
+Underfull \hbox (badness 10000) in paragraph at lines 170--172
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 175--177
+Underfull \hbox (badness 10000) in paragraph at lines 172--174
 
  []
 
-<relat_files/figure-latex/unnamed-chunk-6-1.pdf, id=119, 563.10374pt x 266.9975
-pt>
+<relat_files/figure-latex/unnamed-chunk-6-1.pdf, id=122, 563.10374pt x 289.08pt
+>
 File: relat_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-6-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-6-1.pdf  used o
-n input line 182.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[4 <./relat_files/figure-latex/unnamed-chunk-5-1.pdf> <./relat_files/figure-lat
-ex/unnamed-chunk-6-1.pdf>] [5pdfTeX warning (ext4): destination with the same i
-dentifier (name{table.2}) has been already used, duplicate ignored
+n input line 179.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[4 <./relat_files/figure-latex/unnamed-chunk-5-1.pdf>] [5pdfTeX warning (ext4):
+ destination with the same identifier (name{table.2}) has been already used, du
+plicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.257 ...s lados tem-se \[Y_t-Y_{t-1}=\epsilon_t\]
-                                                   que é um processo estaci...
-pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has
- been already used, duplicate ignored
+l.224 \]
+         <./relat_files/figure-latex/unnamed-chunk-6-1.pdf>] [6pdfTeX warning (
+ext4): destination with the same identifier (name{table.3}) has been already us
+ed, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.257 ...s lados tem-se \[Y_t-Y_{t-1}=\epsilon_t\]
-                                                   que é um processo estaci...
-]
-<relat_files/figure-latex/unnamed-chunk-14-1.pdf, id=151, 563.10374pt x 266.997
-5pt>
+l.289 ... e teste}\label{dados-de-treino-e-teste}}
+                                                  pdfTeX warning (ext4): destin
+ation with the same identifier (name{table.4}) has been already used, duplicate
+ ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.289 ... e teste}\label{dados-de-treino-e-teste}}
+                                                  ]
+<relat_files/figure-latex/unnamed-chunk-14-1.pdf, id=164, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-14-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-14-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-14-1.pdf  used 
-on input line 296.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[6pdfTeX warning (ext4): destination with the same identifier (name{table.4}) h
-as been already used, duplicate ignored
+on input line 293.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[7 <./relat_files/figure-latex/unnamed-chunk-14-1.pdf>] [8pdfTeX warning (ext4)
+: destination with the same identifier (name{table.5}) has been already used, d
+uplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.296 ...re-latex/unnamed-chunk-14-1} \end{center}
-                                                  ] [7 <./relat_files/figure-la
-tex/unnamed-chunk-14-1.pdf>] [8pdfTeX warning (ext4): destination with the same
- identifier (name{table.5}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.435 \end{itemize}
-                   ]
-<relat_files/figure-latex/unnamed-chunk-19-1.pdf, id=185, 563.10374pt x 266.997
-5pt>
+l.421   E
+         TSX(M,M,M) - Melhor modelo com sazonalide multiplicativa;] [9]
+<relat_files/figure-latex/unnamed-chunk-19-1.pdf, id=199, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-19-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-19-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-19-1.pdf  used 
-on input line 520.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[9pdfTeX warning (ext4): destination with the same identifier (name{table.6}) h
-as been already used, duplicate ignored
+on input line 542.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[10pdfTeX warning (ext4): destination with the same identifier (name{table.6}) 
+has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.520 ...re-latex/unnamed-chunk-19-1} \end{center}
+l.542 ...re-latex/unnamed-chunk-19-1} \end{center}
                                                   ]
-<relat_files/figure-latex/unnamed-chunk-20-1.pdf, id=199, 563.10374pt x 266.997
-5pt>
+<relat_files/figure-latex/unnamed-chunk-20-1.pdf, id=208, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-20-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-20-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-20-1.pdf  used 
-on input line 522.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-21-1.pdf, id=200, 563.10374pt x 266.997
-5pt>
+on input line 544.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+<relat_files/figure-latex/unnamed-chunk-21-1.pdf, id=209, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-21-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-21-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-21-1.pdf  used 
-on input line 524.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[10 <./relat_files/figure-latex/unnamed-chunk-19-1.pdf> <./relat_files/figure-l
+on input line 546.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[11 <./relat_files/figure-latex/unnamed-chunk-19-1.pdf> <./relat_files/figure-l
 atex/unnamed-chunk-20-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-22-1.pdf, id=215, 563.10374pt x 266.997
-5pt>
+<relat_files/figure-latex/unnamed-chunk-22-1.pdf, id=224, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-22-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-22-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-22-1.pdf  used 
-on input line 526.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[11 <./relat_files/figure-latex/unnamed-chunk-21-1.pdf> <./relat_files/figure-l
-atex/unnamed-chunk-22-1.pdf>] [12pdfTeX warning (ext4): destination with the sa
+on input line 548.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[12 <./relat_files/figure-latex/unnamed-chunk-21-1.pdf> <./relat_files/figure-l
+atex/unnamed-chunk-22-1.pdf>] [13pdfTeX warning (ext4): destination with the sa
 me identifier (name{table.7}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.646 
+l.674 
       ]
-<relat_files/figure-latex/unnamed-chunk-28-1.pdf, id=239, 563.10374pt x 266.997
-5pt>
+<relat_files/figure-latex/unnamed-chunk-28-1.pdf, id=249, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-28-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-28-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-28-1.pdf  used 
-on input line 654.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-29-1.pdf, id=240, 563.10374pt x 266.997
-5pt>
+on input line 682.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[14pdfTeX warning (ext4): destination with the same identifier (name{table.8}) 
+has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.691 \begin{center}
+                    \includegraphics{relat_files/figure-latex/unnamed-chunk-...
+ <./relat_files/figure-latex/unnamed-chunk-28-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-29-1.pdf, id=263, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-29-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-29-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-29-1.pdf  used 
-on input line 656.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[13pdfTeX warning (ext4): destination with the same identifier (name{table.8}) 
-has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.656 ...re-latex/unnamed-chunk-29-1} \end{center}
-                                                   <./relat_files/figure-latex/
-unnamed-chunk-28-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-30-1.pdf, id=254, 563.10374pt x 266.997
-5pt>
+on input line 691.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+<relat_files/figure-latex/unnamed-chunk-30-1.pdf, id=264, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-30-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-30-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-30-1.pdf  used 
-on input line 665.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-31-1.pdf, id=255, 563.10374pt x 266.997
-5pt>
-File: relat_files/figure-latex/unnamed-chunk-31-1.pdf Graphic file (type pdf)
-<use relat_files/figure-latex/unnamed-chunk-31-1.pdf>
-Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-31-1.pdf  used 
-on input line 667.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[14 <./relat_files/figure-latex/unnamed-chunk-29-1.pdf> <./relat_files/figure-l
+on input line 693.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[15 <./relat_files/figure-latex/unnamed-chunk-29-1.pdf> <./relat_files/figure-l
 atex/unnamed-chunk-30-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-33-1.pdf, id=272, 563.10374pt x 266.997
-5pt>
-File: relat_files/figure-latex/unnamed-chunk-33-1.pdf Graphic file (type pdf)
-<use relat_files/figure-latex/unnamed-chunk-33-1.pdf>
-Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-33-1.pdf  used 
-on input line 677.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-35-1.pdf, id=273, 563.10374pt x 266.997
-5pt>
-File: relat_files/figure-latex/unnamed-chunk-35-1.pdf Graphic file (type pdf)
-<use relat_files/figure-latex/unnamed-chunk-35-1.pdf>
-Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-35-1.pdf  used 
-on input line 684.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[15 <./relat_files/figure-latex/unnamed-chunk-31-1.pdf> <./relat_files/figure-l
-atex/unnamed-chunk-33-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-37-1.pdf, id=294, 563.10374pt x 266.997
-5pt>
-File: relat_files/figure-latex/unnamed-chunk-37-1.pdf Graphic file (type pdf)
-<use relat_files/figure-latex/unnamed-chunk-37-1.pdf>
-Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-37-1.pdf  used 
-on input line 689.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-39-1.pdf, id=295, 563.10374pt x 266.997
-5pt>
+<relat_files/figure-latex/unnamed-chunk-32-1.pdf, id=282, 563.10374pt x 289.08p
+t>
+File: relat_files/figure-latex/unnamed-chunk-32-1.pdf Graphic file (type pdf)
+<use relat_files/figure-latex/unnamed-chunk-32-1.pdf>
+Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-32-1.pdf  used 
+on input line 705.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+<relat_files/figure-latex/unnamed-chunk-34-1.pdf, id=283, 563.10374pt x 289.08p
+t>
+File: relat_files/figure-latex/unnamed-chunk-34-1.pdf Graphic file (type pdf)
+<use relat_files/figure-latex/unnamed-chunk-34-1.pdf>
+Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-34-1.pdf  used 
+on input line 714.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[16 <./relat_files/figure-latex/unnamed-chunk-32-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-36-1.pdf, id=297, 563.10374pt x 289.08p
+t>
+File: relat_files/figure-latex/unnamed-chunk-36-1.pdf Graphic file (type pdf)
+<use relat_files/figure-latex/unnamed-chunk-36-1.pdf>
+Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-36-1.pdf  used 
+on input line 723.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[17 <./relat_files/figure-latex/unnamed-chunk-34-1.pdf> <./relat_files/figure-l
+atex/unnamed-chunk-36-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-38-1.pdf, id=318, 563.10374pt x 289.08p
+t>
+File: relat_files/figure-latex/unnamed-chunk-38-1.pdf Graphic file (type pdf)
+<use relat_files/figure-latex/unnamed-chunk-38-1.pdf>
+Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-38-1.pdf  used 
+on input line 735.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+<relat_files/figure-latex/unnamed-chunk-39-1.pdf, id=319, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-39-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-39-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-39-1.pdf  used 
-on input line 694.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[16 <./relat_files/figure-latex/unnamed-chunk-35-1.pdf> <./relat_files/figure-l
-atex/unnamed-chunk-37-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-40-1.pdf, id=316, 563.10374pt x 266.997
-5pt>
-File: relat_files/figure-latex/unnamed-chunk-40-1.pdf Graphic file (type pdf)
-<use relat_files/figure-latex/unnamed-chunk-40-1.pdf>
-Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-40-1.pdf  used 
-on input line 699.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[17 <./relat_files/figure-latex/unnamed-chunk-39-1.pdf> <./relat_files/figure-l
-atex/unnamed-chunk-40-1.pdf>]
-<relat_files/figure-latex/unnamed-chunk-43-1.pdf, id=335, 563.10374pt x 266.997
-5pt>
+on input line 744.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[18 <./relat_files/figure-latex/unnamed-chunk-38-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-43-1.pdf, id=334, 563.10374pt x 289.08p
+t>
 File: relat_files/figure-latex/unnamed-chunk-43-1.pdf Graphic file (type pdf)
 <use relat_files/figure-latex/unnamed-chunk-43-1.pdf>
 Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-43-1.pdf  used 
-on input line 724.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-44-1.pdf, id=336, 563.10374pt x 266.997
-5pt>
-File: relat_files/figure-latex/unnamed-chunk-44-1.pdf Graphic file (type pdf)
-<use relat_files/figure-latex/unnamed-chunk-44-1.pdf>
-Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-44-1.pdf  used 
-on input line 726.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-<relat_files/figure-latex/unnamed-chunk-45-1.pdf, id=337, 563.10374pt x 266.997
-5pt>
-File: relat_files/figure-latex/unnamed-chunk-45-1.pdf Graphic file (type pdf)
-<use relat_files/figure-latex/unnamed-chunk-45-1.pdf>
-Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-45-1.pdf  used 
-on input line 728.
-(pdftex.def)             Requested size: 517.58916pt x 245.41658pt.
-[18pdfTeX warning (ext4): destination with the same identifier (name{table.9}) 
+on input line 777.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[19pdfTeX warning (ext4): destination with the same identifier (name{table.9}) 
 has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.728 ...re-latex/unnamed-chunk-45-1} \end{center}
+l.777 ...re-latex/unnamed-chunk-43-1} \end{center}
                                                    <./relat_files/figure-latex/
-unnamed-chunk-43-1.pdf> <./relat_files/figure-latex/unnamed-chunk-44-1.pdf>]
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 7
-35.
-(c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
-File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-Overfull \hbox (2.22221pt too wide) in paragraph at lines 753--756
+unnamed-chunk-39-1.pdf>]
+<relat_files/figure-latex/unnamed-chunk-44-1.pdf, id=350, 563.10374pt x 289.08p
+t>
+File: relat_files/figure-latex/unnamed-chunk-44-1.pdf Graphic file (type pdf)
+<use relat_files/figure-latex/unnamed-chunk-44-1.pdf>
+Package pdftex.def Info: relat_files/figure-latex/unnamed-chunk-44-1.pdf  used 
+on input line 779.
+(pdftex.def)             Requested size: 517.58916pt x 265.71422pt.
+[20 <./relat_files/figure-latex/unnamed-chunk-43-1.pdf> <./relat_files/figure-l
+atex/unnamed-chunk-44-1.pdf>]
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 819--822
 [] []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 753--756
+Underfull \hbox (badness 10000) in paragraph at lines 819--822
 
  []
 
-[19 <./relat_files/figure-latex/unnamed-chunk-45-1.pdf>] (./relat.aux)
+
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 823--826
+[][] []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 823--826
+
+ []
+
+
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 827--830
+[][] []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 827--830
+
+ []
+
+
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 831--834
+[][] []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 831--834
+
+ []
+
+
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 835--838
+[][] []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 835--838
+
+ []
+
+
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 839--842
+[][] []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 839--842
+
+ []
+
+
+Overfull \hbox (2.22221pt too wide) in paragraph at lines 843--846
+[][] []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 843--846
+
+ []
+
+[21pdfTeX warning (ext4): destination with the same identifier (name{table.10})
+ has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.856 \end{document}
+                    ] (./relat.aux)
 Package rerunfilecheck Info: File `relat.out' has not changed.
-(rerunfilecheck)             Checksum: 96D6EA124D64521F743DABA5E3C94F79;1694.
+(rerunfilecheck)             Checksum: F9A8B1008D9F599722E445D9159C98BD;1848.
  ) 
 Here is how much of TeX's memory you used:
- 14135 strings out of 480246
- 231697 string characters out of 5894533
- 555883 words of memory out of 5000000
- 31676 multiletter control sequences out of 15000+600000
- 553154 words of font info for 92 fonts, out of 8000000 for 9000
+ 14086 strings out of 480246
+ 230308 string characters out of 5894533
+ 555170 words of memory out of 5000000
+ 31623 multiletter control sequences out of 15000+600000
+ 547216 words of font info for 90 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,9n,63p,747b,421s stack positions out of 5000i,500n,10000p,200000b,80000s
-{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.en
-c}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-maths
-y.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-m
-athit.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/
-lm-rm.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/
-lm-ts1.enc}<c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public
-/lm/lmbx10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/pu
-blic/lm/lmbx12.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type
-1/public/lm/lmbx9.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/t
-ype1/public/lm/lmmi10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fon
-ts/type1/public/lm/lmmi7.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/
-fonts/type1/public/lm/lmr10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-di
-st/fonts/type1/public/lm/lmr12.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf
--dist/fonts/type1/public/lm/lmr17.pfb><c:/Users/user/AppData/Roaming/TinyTeX/te
-xmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/Users/user/AppData/Roaming/TinyTeX/
-texmf-dist/fonts/type1/public/lm/lmr9.pfb><c:/Users/user/AppData/Roaming/TinyTe
-X/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/user/AppData/Roaming/Ti
-nyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/user/AppData/Roamin
-g/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy7.pfb><c:/Users/user/AppData/Roa
-ming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on relat.pdf (19 pages, 506732 bytes).
+ 60i,9n,63p,958b,419s stack positions out of 5000i,500n,10000p,200000b,80000s
+{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.e
+nc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-math
+ex.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-
+mathsy.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm
+/lm-mathit.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvip
+s/lm/lm-rm.enc}{c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvip
+s/lm/lm-ec.enc}<c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/pu
+blic/lm/lmbx10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/type
+1/public/lm/lmbx12.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fonts/
+type1/public/lm/lmex10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dist/fo
+nts/type1/public/lm/lmmi10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-dis
+t/fonts/type1/public/lm/lmmi7.pfb><c:/Users/user/AppData/Roaming/TinyTeX/texmf-
+dist/fonts/type1/public/lm/lmr10.pfb><c:/Users/user/AppData/Roaming/TinyTeX/tex
+mf-dist/fonts/type1/public/lm/lmr12.pfb><c:/Users/user/AppData/Roaming/TinyTeX/
+texmf-dist/fonts/type1/public/lm/lmr17.pfb><c:/Users/user/AppData/Roaming/TinyT
+eX/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/Users/user/AppData/Roaming/Tin
+yTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/user/AppData/Roaming
+/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/user/AppData/Roa
+ming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy7.pfb>
+Output written on relat.pdf (21 pages, 440017 bytes).
 PDF statistics:
- 464 PDF objects out of 1000 (max. 8388607)
- 365 compressed objects within 4 object streams
- 96 named destinations out of 1000 (max. 500000)
- 223 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 476 PDF objects out of 1000 (max. 8388607)
+ 382 compressed objects within 4 object streams
+ 107 named destinations out of 1000 (max. 500000)
+ 221 words of extra memory for PDF output out of 10000 (max. 10000000)
 

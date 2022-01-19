@@ -1,7 +1,6 @@
 ---
-title: "O GRANDE TÍTULO"
+title: "Um estudo das avaliações de Naruto Shippuden"
 author: "Alisson Rosa e Vítor Pereira"
-abstract: "One Piece > Naruto"
 header-includes:
    - \usepackage[brazil]{babel}
    - \usepackage{bm,placeins}
@@ -18,13 +17,15 @@ link-citations: true
 
 ---
 
-
-
 ```{r setup,include=F}
 
 options(digits = 3) # Arrendodamento
 ggplot2::theme_set(ggplot2::theme_minimal()) # Tema dos gráficos produzidos no ggplot2
-knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 3.7)
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 4)
+
+```
+
+```{r functions}
 #devtools::install_github("https://github.com/AlissonRP/mypdf1") remova o `#`
 #devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 #devtools::install_github("AlbertoAlmuinha/boostime")
@@ -36,9 +37,6 @@ library(sknifedatar)
 library(catboost)
 library(patchwork)
 library(boostime)
-```
-
-```{r functions}
 barplot <- function(df, v) {
   ggplot(df, aes(
     x = {{ v }},
@@ -215,7 +213,6 @@ tab2 <- as.data.frame(c("Kruskal-Wallis", "Friedman", "Autocorrelação em lags 
 tab2[, 2] <- c(krusk$Pval, friedman$Pval, tqs$Pval)
 names(tab2) <- c("Testes", "P-valor")
 tab2$`P-valor` <- round(tab2$`P-valor`, 4)
-tab2$`P-valor` <- ifelse(tab2$`P-valor` < 0.05, ifelse(tab2$`P-valor` < 0.0001, "<0,0001*", paste0(as.character(tab2$`P-valor`), "*")), tab2$`P-valor`)
 ```
 
 ```{r}
@@ -242,7 +239,6 @@ tab3 <- as.data.frame(c("Kwiatkowski-Phillips-Schmidt-Shin (KPSS)", "Augmented D
 tab3[, 2] <- c(kpss$p.value, adf$p.value, pp$p.value)
 names(tab3) <- c("Testes", "P-valor")
 tab3$`P-valor` <- round(tab3$`P-valor`, 4)
-tab3$`P-valor` <- ifelse(tab3$`P-valor` < 0.05, ifelse(tab3$`P-valor` < 0.0001, "<0,0001*", paste0(as.character(tab3$`P-valor`), "*")), tab3$`P-valor`)
 ```
 
 ```{r}
@@ -300,10 +296,11 @@ recipe_date_extrafeatures_fourier<-recipe_date_extrafeatures  %>%
 Aqui iremos testar diversos modelos como: suavização exponencial (ets), suavização exponencial no modelo de espaço de estado SSOE, suavização exponencial theta (equivalente a suavização exponencial simples com tendencia constante (drift)  e o procedimento Prophet do Facebook, é um modelo aditivo utilizando tendências não lineares, para entender mais o modelo Prophet [\textcolor{blue}{clique aqui.}](https://facebook.github.io/prophet/)
 
 ### Suavização exponencial
-Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores. Sendo ao total 51 modelos testados.
+Começaremos utilizando todos os modelos ets possíveis, smooth_es, theta e croston. Assim, para escolhermos os melhores, de acordo principalmente com três métricas: MAE, RMSE e R². Sendo ao total 51 modelos testados.
 
 #### Ajustando os modelos
-Para os modelos de suavização exponencial iremos os escolher pelo menos um modelo que seja o melhor em cada uma dessas categorias: Erro Aditivo, Erro Multiplicativo, Sem Tendência, Tendência Aditiva, Tendência Multiplicativa, Tendência Amortecida, Sem Sazonalidade, Sazonalidade Aditiva, Sazonalidade Multiplicativa e bom R².
+
+Para os modelos de suavização exponencial iremos os escolher pelo menos um modelo que seja o melhor em cada uma dessas categorias: Erro Aditivo, Erro Multiplicativo, Sem Tendência, Tendência Aditiva, Tendência Multiplicativa, Tendência Amortecida, Sem Sazonalidade, Sazonalidade Aditiva, Sazonalidade Multiplicativa e bom R², para o ajuste do modelo foi utilizado o pacote Sknifedatar em conjunto com o ModelTime, sendo essa uma maneira mais simples e mais próxima do tidyverse de acordo com @bartolome2021workflowsets.
 
 Já no ajuste de modelos podemos perceber que a suavização exponencial não pude utilizar de algumas combinações de erro, tendencia e sazonalidade, esses são modelos são: ets(A,N,M), ets(A,A,M), ets(A,AD,M), ets(A,M,N), ets(A,MD,N), ets(A,M,A), ets(A,MD,A), ets(A,M,M), ets(A,MD,M), ets(M,M,A) e ets(M,MD,A). Assim, temos que entre os modelos válidos, escolhendo a melhor combinação de recipe e modelos, temos as seguintes métricas para cada modelo: (ordenados pela métrica MAE)
 
@@ -398,17 +395,17 @@ rank & .model\_desc & mae & mape & mase & smape & rmse & rsq\\
 
 Assim os modelos escolhidos foram: 
 
-  -   ETSX(M,A,N) - melhor modelo
-  -   ETS(M,A,N) - melhor modelo da suavização exponencial normal
-  -   Croston - Bom método num geral e é de engine diferente
-  -   Theta - Bom R² e é de engine diferente
-  -   ETSX(M,A,A) - Melhor modelo com sazonalidade aditiva
-  -   ETSX(M,M,M) - Melhor modelo com sazonalide multiplicativa
-  -   ETSX(A,N,M) - Melhor modelo com erro aditivo e sem tendencia
-  -   ETS(M,M,M) - Segundo melhor modelo da suavização exponencial normal 
-  -   ETS(M, AD, N) - Melhor modelo com tendencia amortecida
-  -   ETSX(M,N,N) - Modelo equilibrado em todas as medidas e com bom R² entre os ETS()
-  -   ETSX(A,M,A) - Modelo com melhor R²
+  -   ETSX(M,A,N) - Melhor modelo;
+  -   ETS(M,A,N) - Melhor modelo da suavização exponencial normal;
+  -   CROSTON - Bom método num geral e é de engine diferente;
+  -   THETA - Bom R² e é de engine diferente;
+  -   ETSX(M,A,A) - Melhor modelo com sazonalidade aditiva;
+  -   ETSX(M,M,M) - Melhor modelo com sazonalide multiplicativa;
+  -   ETSX(A,N,M) - Melhor modelo com erro aditivo e sem tendencia;
+  -   ETS(M,M,M) - Segundo melhor modelo da suavização exponencial normal; 
+  -   ETS(M, AD, N) - Melhor modelo com tendencia amortecida;
+  -   ETSX(M,N,N) - Modelo equilibrado em todas as medidas e com bom R² entre os ETS();
+  -   ETSX(A,M,A) - Modelo com melhor R².
   
 ### Modelos Prophet
 
@@ -419,10 +416,41 @@ Assim utilizaremos 4 modelos Prophets para o ajuste de modelos e comparação co
   -   Prophet com todos hiperparâmetros padrões e engine xgboost;
   -   Prophet com crescimento logístico, changepoint_range 0.8, restante de hiperparâmetros padrões e engine xgboost;
   -   Prophet com crescimento logístico, changepoint_range 0.8628, changepoint_num 33, trees 2000, tree_depth 2, learn_rate 0.000975, mtry 7 e engine xgboost;
-  -   Prophet com crescimento linear, changepoint_range 0.7323, changepoint_num 29, trees 2000, tree_depth 4, learn_rate 0.00335856, mtry 9 e engine catboost;
+  -   Prophet com crescimento linear, changepoint_range 0.7323, changepoint_num 29, trees 2000, tree_depth 4, learn_rate 0.00335856, mtry 9 e engine catboost.
 
 
 ### Ajustando os modelos
+
+As métricas utilizadas para escolher os modelos são:
+
+
+
+**MAE** - Erro médio de previsão - calcula o "erro absoluto médio" dos erros entre valores observados (reais) e predições (hipóteses);
+
+$$MAE = \dfrac{1}{n}\sum_{t=1}^{n}|e(t)|$$
+**MAPE** - Percentual médio absoluto de erro - A média dos erros percentuais absolutos (MAPE) é uma das medidas de acurácia mais utilizada, devido as vantagens de interpretação e independência na escala;
+
+$$MAPE = (\dfrac{1}{n}\sum_{t=1}^{n}|\dfrac{e(t)}{X_t}|)$$
+
+**MASE** - Erro Escalonado Absoluto Médio - Erros escalonados foram propostos como uma alternativa ao uso
+de erros percentuais ao comparar a precisão da previsão em séries com unidades diferentes. Eles
+propuseram escalonar os erros com base no treinamento MAE a partir de um método simples de
+previsão;
+
+$$MASE = \dfrac{1}{n}\sum_{t=1}^{n}|q_t|$$
+
+**RMSE** -  Raiz quadrada da média dos erros quadráticos - Se a acurácia de técnicas de previsão é avaliada em séries temporais que apresentam a mesma escala, uma das medidas sugeridas é a raiz quadrada da média dos erros quadráticos (RMSE);
+
+$$RMSE = \sqrt{\dfrac{1}{n}\sum_{t=1}^{n}[e(t)]^2}$$
+
+**SMAPE** - Erro percentual absoluto médio simétrico - É um medida baseada no percentual relativo de erros;
+
+$$SMAPE = (\dfrac{1}{n}\sum_{t=1}^{n}|\dfrac{F_t - A_t}{\dfrac{F_t + A_t}{2}}|)$$
+
+**R²** - Coeficiente de determinação - É uma medida de ajuste do modelo aos dados reais.
+
+$$\hat{R^2} = 1 - \dfrac{n-1}{n-(k_1)}(1-R^2)$$ 
+
 
 ```{r}
 prophet_boost <- prophet_boost(mode = 'regression') %>% 
@@ -521,23 +549,28 @@ model_fit1 <- modeltime_wfs_fit(.wfsets = model_work1,
                             .serie=df)
 model_fit1 <- model_fit1 %>% mutate(.model_desc = case_when(str_detect(model_fit1$.model_id,"catboostA") == TRUE ~ "PROPHET CATBOOST",str_detect(model_fit1$.model_id,"prophet_boost_logM") == TRUE ~ "PROPHET XGBOOST TUNNADO", str_detect(model_fit1$.model_id,"prophet_boost_log") == TRUE ~ "PROPHET XGBOOST", str_detect(model_fit1$.model_id,"prophet_boost") == TRUE ~ "PROPHET XGBOOST DEFAULT", TRUE ~ .model_desc))
 ```
-Com os modelos ajustados, agora podemos ver quais são os 20 modelos possuem as melhores métricas, ordenados de acordo com o rmse:
+
+Com os modelos ajustados, agora podemos ver quais são os 20 modelos possuem as melhores métricas, ordenados de acordo com o RMSE:
+
 ```{r}
 model_metrics1 <- modeltime_wfs_rank(model_fit1,
                               rank_metric = "rmse")
 model_metrics1 <- model_metrics1 %>% mutate(.model_desc = case_when(str_detect(model_metrics1$.model_id,"catboostA") == TRUE ~ "PROPHET CATBOOST",str_detect(model_metrics1$.model_id,"prophet_boost_logM") == TRUE ~ "PROPHET XGBOOST TUNNADO", str_detect(model_metrics1$.model_id,"prophet_boost_log") == TRUE ~ "PROPHET XGBOOST", str_detect(model_metrics1$.model_id,"prophet_boost") == TRUE ~ "PROPHET XGBOOST DEFAULT", TRUE ~ .model_desc))
 model_metrics1[1:20,] %>%
-  select(-c(`.fit_model`, `.model_id`, `.type`)) %>%
+  select(-c(`.fit_model`, `.model_id`, `.type`)) %>% rename(Modelo = .model_desc) %>%
   mypdf1::pdf1_tbl("Métricas nos dados de teste")
 ```
 
 #### Gráficos
 
+
+
 Nesta seção será mostrado alguns gráficos interessantes dos seguintes modelos: Prophet's, ETSX(MAN), ETS(MAN) do smooth, ETS(MAN) do forecast e ETS(MAA) do smooth.
 
-##### Previsões
-
 ```{r}
+for(i in 1:nrow(model_metrics1)){
+  model_metrics1$.fit_model[[i]]$.model[[1]]$fit[["fit"]][["fit"]][["desc"]] <- model_metrics1$.model_desc[i]
+}
 model_metrics1$`.fit_model`[[1]]$.model[[1]] %>% modeltime_table()%>%
      modeltime_forecast(
          new_data    = df_test,
@@ -608,7 +641,10 @@ model_metrics1$`.fit_model`[[13]]$.model[[1]] %>% modeltime_table()%>%
      )
 ```
 
+Assim conseguimos compreender a diferença entre os modelos ETS e os modelos PROPHET nos dados de teste, podemos ver que os modelos PROPHET se adaptam muito melhor.
+
 ### Reajuste do modelo
+
 Agora iremos reajustar o modelo utilizando não apenas os dados de treino, mas toda a base de dados.
 ```{r, , results = F, fig.show='hide'}
 model_refit <- modeltime_wfs_refit(.wfs_results = model_metrics1, .serie = df)
@@ -658,24 +694,29 @@ my_m1%>%
 ```
 
 ### Análise de resíduo
-Apesar dos modelos acima apresentarem bons valores nas métricas acima, não significa que eles são inferencialmente adequadas, então nessa seção testaremos quais dos modelos ajustados são adequados de acordo com os seguintes critérios: Todos os parâmetros estiamdos são estatisticamente significantes, os resíduos não apresentam autocorrelação serial, correlação cruzada ou heterocedasticidade conficional, para os resíduos se comportarem como ruídos brancos e os resíduos não violam a hipótese de distribuição normal.
+
+Apesar dos modelos acima apresentarem bons valores nas métricas acima, não significa que eles são inferencialmente adequadas, então nessa seção testaremos quais dos modelos ajustados são adequados de acordo com os seguintes critérios: Todos os parâmetros estiamdos são estatisticamente significantes, os resíduos não apresentam autocorrelação serial, correlação cruzada ou heterocedasticidade condicional, para os resíduos se comportarem como ruídos brancos e os resíduos não violam a hipótese de distribuição normal.
 
 Assim usaremos os seguintes testes:
 
 **Shapiro-Wilk** para testar a normalidade dos resíduos, com a seguinte hipótese:
+
 $$
 H_0:\text{ Os dados seguem uma distribuição Normal}
 $$
+
 **Ljung-Box e Box-Pierce** para testar a independência dos resíduos, com a seguinte hipótese:
+
 $$
 H_0:\text{Os dados são independentes e identicamente distribuídos.}
 $$
 
 **Durbin-Watson** para analisar correlação serial nos resíduos:
+
 $$
 H_0:\text{Não há correlação serial e }  \rho = 0  
 $$
-Porém, nesse teste não é usado p-valor e sim a Estatística de Durbin-Watson, assim para não ter correlação serial a estatística deve ser o mais próximo de 2.
+Sendo $\rho$ o coeficiente de correlação. Nesse teste não é usado p-valor e sim a Estatística de Durbin-Watson, assim para não ter correlação serial a estatística deve ser o mais próximo de 2.
 
 ```{r}
 for(i in 1:nrow(model_refit)){
@@ -695,41 +736,45 @@ for(i in 1:nrow(model_refit)){
 
 
 ```{r}
-residuos %>% mutate(.model_desc = model_fit1$.model_desc)%>% mutate(n = 1:nrow(residuos)) %>% filter(ljung_box >0.05) %>% mypdf1::pdf1_tbl("Modelos que passaram nos teste de resíduos")
+residuos %>% mutate(.model_desc = model_fit1$.model_desc) %>% filter(ljung_box >0.05) %>% mypdf1::pdf1_tbl("Modelos que passaram nos teste de resíduos")
 ```
 Então apenas 7 dos nosso modelos passaram nos testes de Shapiro-Wilk, Box-Pierce e Ljung-Box: ETS(A,M,A), ETS(A,N,M), THETA, PROPHET XGBOOST DEFAULT, PROPHET XGBOOST, ETSX(A,M,A) e ETSX(A,N,M). Desses nossos 7 modelos apenas 2 apresentaram boas métricas: PROPHET XGBOOST DEFAULT e PROPHET XGBOOST. Então esses seriam os modelos indicados para a predição e previsão da Série Temporal.
 
 #### Gráfico da AutoCorrelação Parcial
 
+
+
 Além dos testes acima também podemos buscar uma confirmação visual de que os modelos são adequados, assim iremos usar a autocorrelação parcial para corroborar com o que foi mostrado pelos testes:
 
 ```{r}
 ggPacf(model_refit$.model[[28]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]])+
-labs(title = "Função de autocorrelação Parcial",x="Defasagem")
-```
-```{r}
-ggPacf(model_refit$.model[[29]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]])
+labs(title = "Função de autocorrelação Parcial",x="Defasagem") +
+ggPacf(model_refit$.model[[29]][["fit"]][["fit"]][["fit"]][["data"]][[".residuals"]]) + labs(title = "Função de autocorrelação Parcial",x="Defasagem") 
 ```
 
 Na FacP do modelo PROPHET XGBOOST DEFAULT, podemos notar que em alguns pequenos pontos existe uma correlação significativa, mas estando no limite da correlação e com valores muito pequenos, assim podendo ser desconsiderada. No entanto, no modelo PROPHET XGBOOST não há nenhuma correlação que saia dos limites de não autocorrelação.
 
 #### Gráficos dos modelos reajustados
 
+
+
 Nesta seção veremos os dois modelos escolhidos, que passaram na análise de resíduo e tem boas métricas:
 
 ```{r}
+model_refit$.model[[28]][["fit"]][["fit"]][["fit"]][["desc"]] <- model_refit$.model_desc[28]
+model_refit$.model[[29]][["fit"]][["fit"]][["fit"]][["desc"]] <- model_refit$.model_desc[29]
 model_refit$.model[[28]] %>% modeltime_table()%>%
      modeltime_forecast(
          new_data    = df,
          actual_data = df
      ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost reajustada", .interactive = FALSE
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet XGboost", .interactive = FALSE
      )+ model_refit$.model[[28]] %>% modeltime_table()%>%
     modeltime_forecast(
         new_data    = df_test,
         actual_data = df
     ) %>%
-    plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost reajustada nos dados de teste", .interactive = FALSE)
+    plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet XGboost dados de teste", .interactive = FALSE)
 ```
 
 
@@ -739,27 +784,23 @@ model_refit$.model[[29]] %>% modeltime_table()%>%
          new_data    = df,
          actual_data = df
      ) %>%
-     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost default reajustada", .interactive = FALSE
+     plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet XGboost default", .interactive = FALSE
      ) + model_refit$.model[[29]] %>% modeltime_table()%>%
     modeltime_forecast(
         new_data    = df_test,
         actual_data = df
     ) %>%
-    plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet com XGboost default reajustada nos dados de teste", .interactive = FALSE
+    plot_modeltime_forecast(.conf_interval_show = FALSE, .title= "Prophet XGboost default dados de teste", .interactive = FALSE
     )
 ```
-
-
 
 ## Utilizando outros Pacotes
 Nesta seção iremos construir a modelagem de séries temporais utilizando outros pacotes além do modeltime, como o pacote forecast, smooth e SMA principalmente para construção de modelos holt, médias móveis e regressão LOESS.
 
 ### Médias Móveis Simples
-
+Começaremos os modelos nessa seção com um dos elementos estatísticos mais citados nos últimos tempos: as médias móveis, que foram muito utilizadas para analisar o avanço da COVID-19 sendo constantemente noticiada, assim ganhando destaque. Aqui veremos se a média móvel simples também é um bom modelo para a avaliação de episódios de Naruto. Sabendo que as médias móveis é o cálculo de média aritmética das k observações mais recentes, nesse caso utilizaremos as 21 observações mais recentes pois é o número médio da temporada de Naruto Shippuden.
 
 ```{r}
-mms <- TTR::SMA(df$rate, n = 10)
-
 mms <- TTR::SMA(df$rate, n = 21)
 
 df1 <- cbind(df, mms)
@@ -781,8 +822,12 @@ df1 %>%
   )
 ```
 
+Assim nota-se que existe uma suavização dos picos de crescimento e de queda da avaliação dos episódios, não compreendendo toda a variação dos dados. 
+
 #### Previsão
-Utilizando o pacote smooth, temos a seguinte previsão
+
+
+Não foi possível realizar a previsão com o pacote TTR, assim buscamos uma alternativa e resolvemos utilizar o pacote smooth para não ficarmos com a predição, então temos o gráfico abaixo que dá a previsão e os índices de confiança: 
 
 ```{r, results = F, fig.show='hide'}
 mms1 <- smooth::sma(df$rate[1:400], order = 21, silent = FALSE, interval = "p", h = 100)
@@ -799,13 +844,17 @@ ICbands <- data.frame(upper = mms1$upper, lower = mms1$lower, n = (length(mms1$f
 ```{r}
 ggplot() +
   geom_ribbon(data = ICbands, aes(x = n, ymin = lower, ymax = upper), fill = "grey70") +
-  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieOriginal")) +
   geom_line(data = fit_forecast, aes(x = n, y = forecast, colour = "Forecast")) +
-  geom_vline(xintercept = max(df1$numero_episodio))
+  geom_vline(xintercept = max(df1$numero_episodio)) + labs(x="Episódio", y = "Avaliação")
 ```
+
+Percebe-se que o modelo de médias, acaba sobreajustando os dados, ou seja, é muito bom nos dados de treino, mas tende a uma reta e constante nos dados de teste, assim temos indícios de que não será um bom modelo.
 
 
 ### Regressão LOESS
+
+A Regressão LOESS, é um método não paramétricos para estimar curvas e superfícies com suavização nessa seção buscamos mostrar, uma Regressão LOESS um pouco diferente, utilizando o parâmetro de suavização buscando o menor SSE entre a predição da LOESS e a série verdadeira.
 
 ```{r, results = F}
 op1 <- optim(par = c(0.5), fn = calcSSE, method = "SANN", data = df1, regressor = "rate", time = "Time")
@@ -819,17 +868,17 @@ df1 <- cbind(df, prl$fit) # Página 78, linha 45 à 52.
 ```{r}
 df1 %>%
   ggplot(aes(x = numero_episodio)) +
-  geom_line(aes(y = rate, colour = "SerieNormal")) +
+  geom_line(aes(y = rate, colour = "SerieOriginal")) +
   geom_line(aes(y = `prl$fit`, colour = "RegLoess")) +
   geom_ribbon(aes(ymin = prl$fit - prl$se.fit, ymax = prl$fit + prl$se.fit, alpha = 0.05)) +
   labs(x = "Numero do episódio", y = "Avaliação") +
   scale_colour_manual("",
-    breaks = c("SerieNormal", "RegLoess"),
+    breaks = c("SerieOriginal", "RegLoess"),
     values = c(
-      "SerieNormal" = "#1EAB78",
+      "SerieOriginal" = "#1EAB78",
       "RegLoess" = "#CF6520"
     )
-  )
+  ) + labs(x="Episódio", y = "Avaliação")
 ```
 
 ```{r, results = F, fig.show='hide'}
@@ -845,8 +894,14 @@ h2 <- holt(treino, damped = TRUE, h = 100)
 
 #predict.HoltWinters(h3, 100)
 ```
-### Holt não Amortecido
+### Modelos Holt
+Buscaremos estudar e modelar mais uma técnica de Suavização Exponencial, os modelos de Holt, acabamos não conseguindo usar os modelos de Holt-Winters, pois tivemos problemas com a frequência da Série. Assim utilizaremos dois modelos de Holt Clássico com amortecimento na tendencia e sem amortecimento.
 
+#### Holt não Amortecido
+
+
+
+Assim então o gráfico do modelo do Holt clássico não amortecido é:
 ```{r}
 forecast_h1 <- data.frame(forecast = c(h1$fitted, h1$mean), n = 1:length(c(h1$fitted, h1$mean)))
 ICbands_h1 <- data.frame(upper = h1$upper[, 2], lower = h1$lower[, 2], n = (length(h1$fitted) + 1):(length(h1$fitted) + length(h1$mean)))
@@ -857,13 +912,18 @@ forecast_h1 <- forecast_h1 %>%
   ))
 ggplot() +
   geom_ribbon(data = ICbands_h1, aes(x = n, ymin = lower, ymax = upper), fill = "grey70") +
-  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieOriginal")) +
   geom_line(data = forecast_h1, aes(x = n, y = forecast, colour = "Forecast")) +
-  geom_vline(xintercept = max(df1$numero_episodio))
+  geom_vline(xintercept = max(df1$numero_episodio)) + labs(x="Episódio", y = "Avaliação")
 ```
+Logo, podemos ver que ele se comporta bem em todos os dados de teste, no entanto nos dados de treino ele tende a uma reta.
+
+#### Holt com Amortecimento
 
 
-### Holt com Amortecimento
+
+
+Assim então o gráfico do modelo do Holt clássico com amortecimento é:
 
 ```{r}
 forecast_h2 <- data.frame(forecast = c(h2$fitted, h2$mean), n = 1:length(c(h2$fitted, h2$mean)))
@@ -875,12 +935,16 @@ forecast_h2 <- forecast_h2 %>%
   ))
 ggplot() +
   geom_ribbon(data = ICbands_h2, aes(x = n, ymin = lower, ymax = upper), fill = "grey70") +
-  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieOriginal")) +
   geom_line(data = forecast_h2, aes(x = n, y = forecast, colour = "Forecast")) +
-  geom_vline(xintercept = max(df1$numero_episodio))
+  geom_vline(xintercept = max(df1$numero_episodio)) + labs(x="Episódio", y = "Avaliação")
 ```
+Observa-se que todos os modelos nessa seção, estão sobreajustados, todos tendendo a uma reta dos dados de treino.
+
 
 ### Métricas
+
+Utilizaremos as mesmas métricas utilizadas no dados de teste dos Modelos do Pacote ModelTime, nos dados de teste dos modelos propostos nessa seção:
 
 ```{r}
 true_values1 <- df %>%
@@ -919,10 +983,13 @@ names(M1) <- str_to_upper(Metricas)
 M1 %>%
   mypdf1::pdf1_tbl("Métricas nos dados de teste")
 ```
+Observa-se claramente que as métricas dos modelos desta seção são menos satisfatórios, que os modelos propostos anteriormente, com a métrica MAE não superando nem os piores modelos ETS's, assim como o RMSE e as outras métricas. Então confirmamos o que foi notado com os gráficos que modelos que tendem a reta nos dados de treino, não serão melhores que os modelos que captam melhor as variabilidades. 
 
 ### Reajustando os dados
 
-```{r}
+Mesmo com as métricas dos outros modelos serem superiores iremos verificar se os modelos propostos, reajustados à todos os dados, passam nos testes da análise de resíduos.
+
+```{r, results = F, fig.show='hide'}
 mms1 <- smooth::sma(df$rate, order = 21, silent = FALSE, interval = "p")
 fit_forecast <- data.frame(forecast = c(mms1$fitted), n = 1:length(c(mms1$fitted)))
 fit_forecast <- fit_forecast[-c(501:(500+ length(mms1$forecast))),]
@@ -943,27 +1010,27 @@ forecast_h2 <- forecast_h2[-c(501:(500+ length(h2$mean))),]
 
 ```{r}
 ggplot() +
-  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieOriginal")) +
   geom_line(data = fit_forecast, aes(x = n, y = forecast, colour = "Forecast")) +
-  geom_vline(xintercept = max(df1$numero_episodio))
+  geom_vline(xintercept = max(df1$numero_episodio)) + labs(x="Episódio", y = "Avaliação")
   
 ```
 
 ```{r}
 ggplot() +
-  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
-  geom_line(data = forecast_h1, aes(x = n, y = forecast, colour = "Forecast")) +
-  geom_vline(xintercept = max(df1$numero_episodio)) +
-  ggplot() +
-  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieNormal")) +
-  geom_line(data = forecast_h2, aes(x = n, y = forecast, colour = "Forecast")) +
-  geom_vline(xintercept = max(df1$numero_episodio))
-  
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieOriginal")) +
+  geom_line(data = forecast_h1, aes(x = n, y = forecast, colour = "Forecast")) + labs(x="Episódio", y = "Avaliação") +
+  theme(legend.position = "none") +
+  ggplot() + 
+  geom_line(data = df1, aes(x = numero_episodio, y = rate, colour = "SerieOriginal")) +
+  geom_line(data = forecast_h2, aes(x = n, y = forecast, colour = "Forecast"))  + labs(x="Episódio", y = "Avaliação")
 ```
+
+Nota-se que os modelos completos se ajustam muito bem aos dados, os problemas desses modelos são para fazer previsão.
 
 
 ### Análise de Resíduos
-Assim como nos modelos do pacote ModelTime, não significa que os modelos acima são inferencialmente adequadas, então nessa seção usaremos os mesmos testes definidos na seção de análise de resíduos anterior para verificação do modelo:
+Igualmente aos modelos do pacote ModelTime, não significa que os modelos acima são inferencialmente adequadas, então nessa seção usaremos os mesmos testes definidos na seção de análise de resíduos anterior para verificação do modelo:
 
 ```{r}
 data.frame(Modelos = c("SMA", "Holt", "Holt amortecido"), 
@@ -977,6 +1044,15 @@ data.frame(Modelos = c("SMA", "Holt", "Holt amortecido"),
 Assim, podemos ver que os modelo que não são significativos pelos teste de Shapiro-Wilk, pois os resíduos não possuem distribuição normal. Porém, nos outros testes tem um bom comportamento tendo os resíduos independentes de acordo com Ljung-Box e Box-Pierce, assim como não possuem correlação serial pelo teste de Durbin-Watson, o único modelo que é rejeitado em todos os testes é o Modelo de Médias Móveis. 
 
 # Conclusão
+Desse modo, percebemos que os dois modelos PROPHET XGBOOST que não foram tunnados são os melhores modelos inferenciais dentre os testados para essa série, pois estavam no top 4 considerando as métricas de avaliação do modelo e passaram por todos os testes da análise de resíduo. Outro ponto interessante, apesar de não ser um bom modelo de acordo com a análise de resíduo o modelo ETS(M,A,N) e ETSX(M,A,N) que foram os melhores modelos em métrica dos modelos de Suavização Exponencial, confirmam o que os testes de sazonalidade afirmaram, o 'N' indica que é um modelo de suavização exponencial sem sazonalidade, mas mesmo assim em métricas não chegaram próximos de nenhum dos modelos PROPHET. Outro ponto interessante da análise de resíduo, são os modelos THETA que passaram com todas as receitas e assim como os modelos ETS(A,M,A) e ETS(A,N,M) são modelos que tem métricas ruins comparadas aos outros.
 
+Para os modelos não-Modeltime, o modelo SMA, se destacou entre os outros nas métricas, mas não passou por nenhum teste da análise resíduos, assim nenhum dos modelos mais básicos se candidatou a melhor modelo.
 
 # Referências
+
+<div id="refs"></div>
+
+# Apêndice - Código R {-}
+
+Para acessar o código desse pdf,  [\textcolor{blue}{clique aqui.}](https://github.com/AlissonRP/Trabalho-TS/blob/main/relat.Rmd)
+Para acessar o código da modelagem,  [\textcolor{blue}{clique aqui.}](hhttps://github.com/AlissonRP/Trabalho-TS/blob/main/modelling.Rmd)
