@@ -970,7 +970,8 @@ data.frame(Modelos = c("SMA", "Holt", "Holt amortecido"),
            Ljung_box = c(Box.test(mms1$residuals, type = "Ljung-Box")$p.value,Box.test(h1$residuals, type = "Ljung-Box")$p.value, Box.test(h2$residuals, type = "Ljung-Box")$p.value), 
            Box_Pierce = c(Box.test(mms1$residuals, type = "Box-Pierce")$p.value,Box.test(h1$residuals, type = "Box-Pierce")$p.value, Box.test(h2$residuals, type = "Box-Pierce")$p.value), 
            Durbin_Watson = c(car::durbinWatsonTest(c(mms1$residuals)),car::durbinWatsonTest(c(h1$residuals)), car::durbinWatsonTest(c(h2$residuals))), 
-           Shapiro_wilk = c(shapiro.test(mms1$residuals)$p.value, shapiro.test(h1$residuals)$p.value, shapiro.test(h2$residuals)$p.value))
+           Shapiro_wilk = c(shapiro.test(mms1$residuals)$p.value, shapiro.test(h1$residuals)$p.value, shapiro.test(h2$residuals)$p.value)) |>
+           mypdf1::pdf1_tbl("Testes aplicados nos resíduos")
 ```
 
 Assim, podemos ver que os modelo que não são significativos pelos teste de Shapiro-Wilk, pois os resíduos não possuem distribuição normal. Porém, nos outros testes tem um bom comportamento tendo os resíduos independentes de acordo com Ljung-Box e Box-Pierce, assim como não possuem correlação serial pelo teste de Durbin-Watson, o único modelo que é rejeitado em todos os testes é o Modelo de Médias Móveis. 
